@@ -133,7 +133,37 @@ async function startEmbedded(
   return {
     mode: 'embedded',
     stop: async () => {
-      await pg.stop();
+      // embedded-postgres stops the server with `taskkill /f` on Windows - a hard
+      // kill that forces crash recovery on the next start. Shut down cleanly with
+      // pg_ctl (fast mode = checkpoint, then exit) and only fall back to the
+      // library when that fails.
+      if (await pgCtlStop()) {
+        // The library still holds the exited process and would wait forever for
+        // its 'exit' event in stop() / its exit hook - clear the reference.
+        (pg as unknown as { process?: unknown }).process = undefined;
+      } else {
+        await pg.stop();
+      }
     },
   };
+}
+
+/** `pg_ctl stop -m fast -w` on the embedded cluster. Returns true on success. */
+async function pgCtlStop(): Promise<boolean> {
+  try {
+    const os = process.platform === 'win32' ? 'windows' : process.platform;
+    const binaries = (await import(`@embedded-postgres/${os}-${process.arch}`)) as {
+      pg_ctl: string;
+    };
+    const r = spawnSync(
+      binaries.pg_ctl,
+      ['stop', '-D', PATHS.embeddedPgDir, '-m', 'fast', '-w', '-t', '30'],
+      {
+        stdio: 'ignore',
+      },
+    );
+    return r.status === 0;
+  } catch {
+    return false;
+  }
 }

@@ -1,0 +1,21 @@
+
+
+Secured Soil Moisture Monitoring System - restore backup
+
+▸ Checking cloud\backup-2026-11-08T12-34-15-196Z.json
+  ✓ Format                 soil-backup-v1
+  ✓ Ed25519 signature      valid (server key)
+  ✓ RSA-3072-OAEP unwrap   data key recovered with offline-keys/
+  ✓ AES-256-GCM tag        valid
+  ✓ SHA-256 of plaintext   9242fcac91b58500…
+  ✓ Hash chain             170 readings linked, every HMAC re-computed, head matches
+
+▸ Summary
+  Backup created     2026-11-08T12:34:15.196Z
+  Readings           170 (#1 - #191)
+  Device time range  2026-11-07T12:30:00.000Z  ->  2026-11-08T16:53:48.127Z
+  Soil moisture      avg 28.2 mm, min 24.2, max 32.6
+  Water pumped       1755 ml
+  Chain head         #191 599a5983162ce9ae…
+
+Restored -> restored\backup-2026-11-08T12-34-15-196Z.json

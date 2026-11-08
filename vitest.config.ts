@@ -27,6 +27,15 @@ export default defineConfig({
       },
       {
         test: {
+          name: 'syslog',
+          root: './syslog',
+          include: ['test/**/*.test.ts'],
+          environment: 'node',
+          testTimeout: 20_000,
+        },
+      },
+      {
+        test: {
           name: 'server',
           root: './server',
           include: ['test/unit/**/*.test.ts'],

@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  formatRfc5424,
-  frameOctetCounting,
-  FramingError,
-  parseOctetFrames,
-  parseRfc5424,
-} from '../src/index.js';
+import { formatRfc5424, frameOctetCounting, parseOctetFrames, parseRfc5424 } from '../src/index.js';
 
 const now = new Date('2026-11-08T10:00:00.000Z');
 const opts = { appName: 'soil-server', hostname: 'host1', procId: 42, now };
@@ -98,8 +92,15 @@ describe('RFC 6587 octet counting', () => {
   });
 
   it('rejects garbage and oversized frames', () => {
-    expect(() => parseOctetFrames(Buffer.from('abc hello'))).toThrow(FramingError);
-    expect(() => parseOctetFrames(Buffer.from('99999 x'))).toThrow(/too large/);
-    expect(() => parseOctetFrames(Buffer.from('1234567890'))).toThrow(FramingError);
+    expect(parseOctetFrames(Buffer.from('abc hello')).error).toBe('invalid frame length');
+    expect(parseOctetFrames(Buffer.from('99999 x')).error).toBe('frame too large');
+    expect(parseOctetFrames(Buffer.from('1234567890')).error).toBe('frame length too long');
+  });
+
+  it('keeps the messages that arrived before a bad frame', () => {
+    const r = parseOctetFrames(
+      Buffer.concat([frameOctetCounting('good'), Buffer.from('GET / HTTP/1.1')]),
+    );
+    expect(r).toMatchObject({ messages: ['good'], error: 'invalid frame length' });
   });
 });

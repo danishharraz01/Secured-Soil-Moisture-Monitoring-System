@@ -12,7 +12,7 @@ import { createWriteStream, mkdirSync, type WriteStream } from 'node:fs';
 import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import tls from 'node:tls';
-import { FramingError, MAX_FRAME_BYTES, parseOctetFrames, parseRfc5424 } from '@soil/shared';
+import { MAX_FRAME_BYTES, parseOctetFrames, parseRfc5424 } from '@soil/shared';
 import { formatForConsole } from './console.js';
 
 export interface CollectorOptions {
@@ -52,7 +52,9 @@ export class SyslogCollector {
     server.maxConnections = this.opts.maxConnections ?? 32;
     server.on('secureConnection', (socket) => this.handle(socket));
     // Failed handshakes (e.g. a client that does not trust our certificate) are reported, not fatal.
-    server.on('tlsClientError', (err) => this.print(this.notice(`TLS handshake failed: ${err.message}`)));
+    server.on('tlsClientError', (err) =>
+      this.print(this.notice(`TLS handshake failed: ${err.message}`)),
+    );
     this.server = server;
 
     await new Promise<void>((resolve, reject) => {
@@ -64,7 +66,9 @@ export class SyslogCollector {
 
   async stop(): Promise<void> {
     for (const s of this.sockets) s.destroy();
-    await new Promise<void>((resolve) => (this.server ? this.server.close(() => resolve()) : resolve()));
+    await new Promise<void>((resolve) =>
+      this.server ? this.server.close(() => resolve()) : resolve(),
+    );
     await new Promise<void>((resolve) => (this.file ? this.file.end(() => resolve()) : resolve()));
   }
 
@@ -76,13 +80,12 @@ export class SyslogCollector {
 
     socket.on('data', (chunk: Buffer) => {
       pending = Buffer.concat([pending, chunk]);
-      try {
-        const { messages, rest } = parseOctetFrames(pending);
-        pending = rest;
-        for (const m of messages) this.accept(m);
-        if (pending.length > MAX_FRAME_BYTES + 8) throw new FramingError('frame too large');
-      } catch (e) {
-        const why = e instanceof FramingError ? e.message : 'unreadable data';
+      const { messages, rest, error } = parseOctetFrames(pending);
+      pending = rest;
+      // Messages that arrived before a bad frame are still kept.
+      for (const m of messages) this.accept(m);
+      const why = error ?? (pending.length > MAX_FRAME_BYTES + 8 ? 'frame too large' : undefined);
+      if (why) {
         this.print(this.notice(`dropping ${peer}: ${why}`));
         socket.destroy();
       }
@@ -106,6 +109,8 @@ export class SyslogCollector {
 
   private notice(text: string): string {
     const time = new Date().toTimeString().slice(0, 8);
-    return this.opts.color ? `\x1b[90m${time} ---- collector: ${text}\x1b[0m` : `${time} ---- collector: ${text}`;
+    return this.opts.color
+      ? `\x1b[90m${time} ---- collector: ${text}\x1b[0m`
+      : `${time} ---- collector: ${text}`;
   }
 }

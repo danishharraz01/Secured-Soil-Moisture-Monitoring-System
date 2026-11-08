@@ -93,26 +93,33 @@ export function frameOctetCounting(message: string): Buffer {
 /** Largest frame the collector accepts (RFC 5425 requires at least 2048; 8 KiB is plenty). */
 export const MAX_FRAME_BYTES = 8 * 1024;
 
-export class FramingError extends Error {}
+export interface FrameParseResult {
+  /** Complete messages, in order - including those before a framing error. */
+  messages: string[];
+  /** Unconsumed bytes (an incomplete frame) to prepend to the next chunk. */
+  rest: Buffer;
+  /** Set when the stream is malformed; the connection should then be dropped. */
+  error?: string;
+}
 
 /**
- * Splits a TCP byte stream into octet-counted messages. Returns complete
- * messages and the unconsumed remainder (an incomplete frame). Throws
- * FramingError on a malformed or oversized length so the connection can be dropped.
+ * Splits a TCP byte stream into octet-counted messages. Messages that were
+ * complete before a malformed or oversized frame are still returned.
  */
-export function parseOctetFrames(buffer: Buffer): { messages: string[]; rest: Buffer } {
+export function parseOctetFrames(buffer: Buffer): FrameParseResult {
   const messages: string[] = [];
   let offset = 0;
+  const failed = (error: string): FrameParseResult => ({ messages, rest: Buffer.alloc(0), error });
   while (offset < buffer.length) {
     const space = buffer.indexOf(0x20, offset);
     if (space === -1) {
-      if (buffer.length - offset > 6) throw new FramingError('frame length too long');
+      if (buffer.length - offset > 6) return failed('frame length too long');
       break; // length digits not complete yet
     }
     const lenText = buffer.subarray(offset, space).toString('ascii');
-    if (!/^[1-9]\d{0,5}$/.test(lenText)) throw new FramingError('invalid frame length');
+    if (!/^[1-9]\d{0,5}$/.test(lenText)) return failed('invalid frame length');
     const len = Number(lenText);
-    if (len > MAX_FRAME_BYTES) throw new FramingError('frame too large');
+    if (len > MAX_FRAME_BYTES) return failed('frame too large');
     if (space + 1 + len > buffer.length) break; // body not complete yet
     messages.push(buffer.subarray(space + 1, space + 1 + len).toString('utf8'));
     offset = space + 1 + len;

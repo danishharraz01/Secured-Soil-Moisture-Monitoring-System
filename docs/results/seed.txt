@@ -1,0 +1,8 @@
+Secured Soil Moisture Monitoring System - seed demo data
+  Docker not found - starting embedded PostgreSQL 16 (data/pg)...
+  Embedded PostgreSQL running on localhost:5432
+▸ Seeding the last 24 hours
+  ✓ --fresh: readings, alerts, audit log, sessions and chain head cleared (users and keys kept)
+  ✓ 144 readings from 07/11/2026, 8:30:00 pm (one per 10 min), all in the hash chain
+  ✓ 4 watering cycles (1440 ml), 2 motion events, 1 disconnection of 30 min
+  Thresholds used: ON <= 24.5 mm, OFF >= 32 mm (default 24.5/32)

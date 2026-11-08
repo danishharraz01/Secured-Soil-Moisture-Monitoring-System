@@ -34,8 +34,13 @@ function time(ts: string): string {
   return Number.isNaN(d.getTime()) ? ts.slice(0, 8) : d.toTimeString().slice(0, 8);
 }
 
-export function formatForConsole(msg: ParsedSyslog | undefined, raw: string, color: boolean): string {
-  if (!msg) return color ? `${DIM}???? (not RFC 5424) ${raw}${RESET}` : `???? (not RFC 5424) ${raw}`;
+export function formatForConsole(
+  msg: ParsedSyslog | undefined,
+  raw: string,
+  color: boolean,
+): string {
+  if (!msg)
+    return color ? `${DIM}???? (not RFC 5424) ${raw}${RESET}` : `???? (not RFC 5424) ${raw}`;
   const label = LABEL[msg.severity];
   const head = `${time(msg.timestamp)} ${label} ${msg.msgId.padEnd(8)}`;
   const sd = msg.structuredData === '-' ? '' : ` ${msg.structuredData}`;

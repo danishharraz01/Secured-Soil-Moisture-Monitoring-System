@@ -27,12 +27,20 @@ async function main(): Promise<void> {
   const key = readFileSync(config.tlsKeyPath, 'utf8');
 
   const prisma = createPrisma(config.DATABASE_URL);
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-  } catch {
-    throw new Error(
-      'Cannot reach PostgreSQL - start it with "npm run db" (or docker compose up -d)',
-    );
+  // The database may still be starting (npm run demo starts everything at once): wait up to 30 s.
+  for (let attempt = 1; ; attempt++) {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      break;
+    } catch {
+      if (attempt === 30) {
+        throw new Error(
+          'Cannot reach PostgreSQL - start it with "npm run db" (or docker compose up -d)',
+        );
+      }
+      if (attempt === 1) logger.info('Waiting for PostgreSQL...');
+      await new Promise((r) => setTimeout(r, 1000));
+    }
   }
 
   const syslog = new TlsSyslogClient({
@@ -65,6 +73,11 @@ async function main(): Promise<void> {
     startedAt: Date.now(),
     simSpeedFactor: SIM_FACTOR[config.SIM_SPEED],
   };
+
+  // After a restart the server cannot know whether a device is still connected.
+  // Mark devices offline QUIETLY (no alert/SMS): the next heartbeat (<= 10 s)
+  // reports "connected", while a device that really is gone stays offline.
+  await prisma.device.updateMany({ where: { online: true }, data: { online: false } });
 
   const watcher = new DeviceWatcher(ctx);
   watcher.start();

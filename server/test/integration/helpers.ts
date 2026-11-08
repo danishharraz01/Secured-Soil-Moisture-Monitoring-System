@@ -1,5 +1,8 @@
 /** Shared helpers for integration tests (real PostgreSQL, in-memory syslog/mail). */
-import { createPublicKey, generateKeyPairSync, randomBytes } from 'node:crypto';
+import { createPublicKey, generateKeyPairSync, randomBytes, type KeyObject } from 'node:crypto';
+import { mkdtempSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import {
   buildDeviceRequest,
   deriveDeviceKeys,
@@ -16,6 +19,7 @@ import { silentLogger } from '../../src/logger.js';
 import { encryptDeviceSecret, type ServerKeys } from '../../src/security/keys.js';
 import { hashPassword } from '../../src/security/password.js';
 import { AuditLog } from '../../src/services/audit.js';
+import { BackupService, LocalDirStore } from '../../src/services/backup.js';
 import { OwnerNotifier, type Mailer, type SmsSender } from '../../src/services/notify.js';
 import { MemorySyslog } from '../../src/services/syslog.js';
 
@@ -27,11 +31,14 @@ export function testPrisma(): PrismaClient {
 }
 
 let cachedKeys: ServerKeys | undefined;
+/** The backup PRIVATE key that belongs to testKeys() (only tests and restore use it). */
+export let testBackupPrivateKey: KeyObject;
 /** Fresh in-memory server keys (generated once per test file). */
 export function testKeys(): ServerKeys {
   if (cachedKeys) return cachedKeys;
   const ed = generateKeyPairSync('ed25519');
   const rsa = generateKeyPairSync('rsa', { modulusLength: 3072 });
+  testBackupPrivateKey = rsa.privateKey;
   cachedKeys = {
     masterKey: randomBytes(32),
     chainKey: randomBytes(32),
@@ -100,23 +107,35 @@ export interface TestServer {
   syslog: MemorySyslog;
   mailer: MemoryMailer;
   sms: MemorySms;
+  /** Temporary folder that receives this server's backups. */
+  cloudDir: string;
 }
 
-export function testServer(prisma: PrismaClient, keys: ServerKeys): TestServer {
+export function testServer(prisma: PrismaClient, keys: ServerKeys, backupKeep = 20): TestServer {
   const syslog = new MemorySyslog();
   const mailer = new MemoryMailer();
   const sms = new MemorySms();
+  const audit = new AuditLog(prisma, syslog, silentLogger);
+  const cloudDir = mkdtempSync(path.join(os.tmpdir(), 'soil-cloud-'));
   const ctx: AppContext = {
     prisma,
     keys,
     syslog,
-    audit: new AuditLog(prisma, syslog, silentLogger),
+    audit,
     notifier: new OwnerNotifier(prisma, mailer, sms, silentLogger),
+    backup: new BackupService(
+      prisma,
+      keys,
+      new LocalDirStore(cloudDir),
+      audit,
+      silentLogger,
+      backupKeep,
+    ),
     logger: silentLogger,
     startedAt: Date.now(),
     simSpeedFactor: 600,
   };
-  return { ctx, app: createApp(ctx), syslog, mailer, sms };
+  return { ctx, app: createApp(ctx), syslog, mailer, sms, cloudDir };
 }
 
 /** Sends a device request exactly like the real device (overrides allow attacks). */

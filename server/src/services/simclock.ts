@@ -17,7 +17,9 @@ export async function estimateSimNow(
     select: { ts: true, receivedAt: true },
   });
   if (!last) return now;
-  return new Date(last.ts.getTime() + (now.getTime() - last.receivedAt.getTime()) * factor);
+  // Never earlier than the newest reading (e.g. a heartbeat from before it).
+  const elapsed = Math.max(0, now.getTime() - last.receivedAt.getTime());
+  return new Date(last.ts.getTime() + elapsed * factor);
 }
 
 /** Local calendar date "YYYY-MM-DD" of a timestamp. */

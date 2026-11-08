@@ -1,0 +1,49 @@
+
+
+Attacking https://localhost:8443  (with --tamper-db)
+
+ 1. BLOCKED     Plain HTTP (no TLS) to the API port
+    ECONNRESET - the server only speaks TLS 1.2+
+ 2. BLOCKED     Eavesdropper on the network sees only ciphertext
+    body is {"v":1,"alg":"A128GCM","iv":"SdhZ5rk+CmZDHeAZ","ct":"gYOLWMH… (AES-128-GCM, inside TLS)
+ 3. BLOCKED     Device message without a signature
+    HTTP 401 Missing or malformed signature
+ 4. BLOCKED     Device message signed with a wrong key
+    HTTP 401 Invalid signature
+ 5. BLOCKED     Ciphertext modified in transit
+    HTTP 401 Invalid signature
+ 6. BLOCKED     Unencrypted payload with a VALID signature
+    HTTP 400 Payload must be encrypted
+ 7. BLOCKED     Replay of a captured valid request
+    HTTP 409 Replay detected: nonce already used (original: HTTP 200)
+ 8. BLOCKED     Valid request sent 5 minutes later
+    HTTP 401 Request timestamp is outside the allowed 30 s window
+ 9. BLOCKED     SQL injection in the device ID (celery' OR '1'='1)
+    HTTP 400 Invalid device ID
+10. BLOCKED     Moisture 450 mm (validly signed and encrypted)
+    HTTP 422 Invalid payload (moistureMm: Too big: expected number to be <=50)
+11. BLOCKED     Fake motion alert (attacker has no device key)
+    HTTP 401 Invalid signature
+12. BLOCKED     Fake heartbeat to hide a disconnected device
+    HTTP 401 Invalid signature
+13. BLOCKED     5 KB payload
+    HTTP 413 Payload too large (max 2048 bytes)
+14. BLOCKED     Read data without logging in
+    HTTP 401 Login required
+15. BLOCKED     Reuse an OTP that was already used
+    HTTP 401 This code is no longer valid - please log in again -> back to login
+16. BLOCKED     Wrong OTP (then the right one) -> back to login
+    wrong: HTTP 401 restart=true; correct code afterwards: HTTP 401 (challenge invalidated)
+17. BLOCKED     Viewer changes the watering thresholds
+    HTTP 403 This action requires the admin role
+18. BLOCKED     Viewer triggers a cloud backup
+    HTTP 403 This action requires the admin role
+19. BLOCKED     Expired session token (10-minute limit)
+    HTTP 401 Session expired (10-minute limit) - please log in again (reason: expired)
+20. BLOCKED     Edit a reading directly in PostgreSQL (--tamper-db)
+    before: ok=true; reading #322 set to 49.9 mm -> /api/verify: "Reading #322 was modified"; value restored -> ok=true
+21. BLOCKED     Brute-force the admin password
+    locked out after 5 wrong passwords: HTTP 429, Retry-After 300 s
+
+21 attacks: 21 blocked, 0 got through  ✔ 0 got through
+Note: this IP is now locked out of /api/login for 5 minutes (brute-force protection).

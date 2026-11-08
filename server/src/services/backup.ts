@@ -108,7 +108,11 @@ export function sealBackup(plaintext: BackupPlaintext, keys: SealKeys): BackupEn
       alg: { keyWrap: 'RSA-OAEP-3072-SHA256', data: 'AES-256-GCM', signature: 'Ed25519' },
       readingCount: plaintext.readings.length,
       wrappedKey: publicEncrypt(
-        { key: keys.backupPublicKey, padding: constants.RSA_PKCS1_OAEP_PADDING, oaepHash: 'sha256' },
+        {
+          key: keys.backupPublicKey,
+          padding: constants.RSA_PKCS1_OAEP_PADDING,
+          oaepHash: 'sha256',
+        },
         dataKey,
       ).toString('base64'),
       data: aesGcmEncrypt(dataKey, json, aadFor(plaintext.createdAt)),
@@ -156,20 +160,30 @@ export function openBackup(raw: string, keys: OpenKeys): RestoreResult {
   } catch {
     return fail('Format', 'not valid JSON');
   }
-  if (env?.format !== BACKUP_FORMAT || typeof env.signature !== 'string' || typeof env.wrappedKey !== 'string') {
+  if (
+    env?.format !== BACKUP_FORMAT ||
+    typeof env.signature !== 'string' ||
+    typeof env.wrappedKey !== 'string'
+  ) {
     return fail('Format', `not a ${BACKUP_FORMAT} file`);
   }
   checks.push({ name: 'Format', ok: true, detail: BACKUP_FORMAT });
 
   // 1. Ed25519 signature over everything except the signature itself.
   const { signature, ...unsigned } = env;
-  let sigOk = false;
+  let sigOk: boolean;
   try {
-    sigOk = verify(null, signingBytes(unsigned), keys.signingPublicKey, Buffer.from(signature, 'base64'));
+    sigOk = verify(
+      null,
+      signingBytes(unsigned),
+      keys.signingPublicKey,
+      Buffer.from(signature, 'base64'),
+    );
   } catch {
     sigOk = false;
   }
-  if (!sigOk) return fail('Ed25519 signature', 'INVALID - the file was modified or not made by this server');
+  if (!sigOk)
+    return fail('Ed25519 signature', 'INVALID - the file was modified or not made by this server');
   checks.push({ name: 'Ed25519 signature', ok: true, detail: 'valid (server key)' });
 
   // 2. Unwrap the data key with the OFFLINE private key.
@@ -183,7 +197,11 @@ export function openBackup(raw: string, keys: OpenKeys): RestoreResult {
     return fail('RSA-3072-OAEP unwrap', 'failed - wrong private key?');
   }
   if (dataKey.length !== 32) return fail('RSA-3072-OAEP unwrap', 'data key has the wrong size');
-  checks.push({ name: 'RSA-3072-OAEP unwrap', ok: true, detail: 'data key recovered with offline-keys/' });
+  checks.push({
+    name: 'RSA-3072-OAEP unwrap',
+    ok: true,
+    detail: 'data key recovered with offline-keys/',
+  });
 
   // 3. AES-256-GCM decryption (authentication tag).
   let json: string;
@@ -198,7 +216,11 @@ export function openBackup(raw: string, keys: OpenKeys): RestoreResult {
 
   // 4. SHA-256 of the plaintext.
   if (sha256Hex(json) !== env.plaintextSha256) return fail('SHA-256 of plaintext', 'mismatch');
-  checks.push({ name: 'SHA-256 of plaintext', ok: true, detail: `${env.plaintextSha256.slice(0, 16)}…` });
+  checks.push({
+    name: 'SHA-256 of plaintext',
+    ok: true,
+    detail: `${env.plaintextSha256.slice(0, 16)}…`,
+  });
 
   // 5. Hash chain links (and HMACs when the chain key is available).
   let plaintext: BackupPlaintext;
@@ -232,7 +254,12 @@ function checkChain(p: BackupPlaintext, chainKey?: Buffer): string | undefined {
   }
   const last = p.readings.at(-1);
   if (!p.head) return last ? 'head missing' : undefined;
-  if (!last || p.head.lastId !== last.id || p.head.hash !== last.hash || p.head.count !== p.readings.length) {
+  if (
+    !last ||
+    p.head.lastId !== last.id ||
+    p.head.hash !== last.hash ||
+    p.head.count !== p.readings.length
+  ) {
     return 'head does not match the last reading';
   }
   return undefined;
@@ -300,7 +327,9 @@ export class BackupService {
 
   start(intervalMs: number): void {
     this.timer = setInterval(() => {
-      this.run('scheduled', 'system').catch((e: unknown) => this.logger.error({ err: e }, 'Scheduled backup failed'));
+      this.run('scheduled', 'system').catch((e: unknown) =>
+        this.logger.error({ err: e }, 'Scheduled backup failed'),
+      );
     }, intervalMs);
   }
 
@@ -322,7 +351,9 @@ export class BackupService {
       this.prisma.reading.findMany({ orderBy: { id: 'asc' } }),
       this.prisma.meta.findUnique({ where: { key: 'chain_head' } }),
     ]);
-    const head = meta ? (JSON.parse(meta.value) as { lastId: number; hash: string; count: number }) : null;
+    const head = meta
+      ? (JSON.parse(meta.value) as { lastId: number; hash: string; count: number })
+      : null;
     const plaintext: BackupPlaintext = {
       createdAt,
       head: head ? { lastId: head.lastId, hash: head.hash, count: head.count } : null,
@@ -346,9 +377,15 @@ export class BackupService {
 
     // Keep only the newest N backups.
     const all = await this.store.list();
-    for (const old of all.slice(0, Math.max(0, all.length - this.keep))) await this.store.remove(old);
+    for (const old of all.slice(0, Math.max(0, all.length - this.keep)))
+      await this.store.remove(old);
 
-    const info: BackupInfo = { file, createdAt, readings: rows.length, bytes: Buffer.byteLength(content) };
+    const info: BackupInfo = {
+      file,
+      createdAt,
+      readings: rows.length,
+      bytes: Buffer.byteLength(content),
+    };
     await this.audit.record({
       actor,
       action: 'backup_created',

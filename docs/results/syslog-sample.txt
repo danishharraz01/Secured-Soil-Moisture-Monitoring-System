@@ -1,0 +1,17 @@
+# Sample of logs/syslog.log - raw RFC 5424 lines as received by the collector over TLS
+# <130> = CRIT, <132> = WARNING, <133> = NOTICE, <134> = INFO (facility local0)
+<130>1 2026-11-08T12:25:15.350Z Lexryte4 soil-server 29136 chain [soil@32473 actor="admin" action="chain_tamper_detected" ip="127.0.0.1"] chain_tamper_detected: reading #322: Reading #322 was modified
+<130>1 2026-11-08T12:39:20.454Z Lexryte4 soil-server 24748 device [soil@32473 actor="celery-node-01" action="device_offline"] device_offline: Device celery-node-01 disconnected - no heartbeat for 30 s
+<132>1 2026-11-08T12:25:14.088Z Lexryte4 soil-server 29136 device [soil@32473 actor="celery-node-01" action="device_rejected" ip="127.0.0.1" reason="bad_signature" status="401"] device_rejected: bad_signature: Invalid signature
+<132>1 2026-11-08T12:25:14.094Z Lexryte4 soil-server 29136 device [soil@32473 actor="celery-node-01" action="device_rejected" ip="127.0.0.1" reason="bad_signature" status="401"] device_rejected: bad_signature: Invalid signature
+<132>1 2026-11-08T12:25:14.099Z Lexryte4 soil-server 29136 device [soil@32473 actor="celery-node-01" action="device_rejected" ip="127.0.0.1" reason="payload_too_large" status="413"] device_rejected: payload_too_large: Payload too large (max 2048 bytes)
+<132>1 2026-11-08T12:25:16.018Z Lexryte4 soil-server 29136 auth [soil@32473 actor="admin" action="login_failed" ip="127.0.0.1"] login_failed: wrong password
+<132>1 2026-11-08T12:25:16.231Z Lexryte4 soil-server 29136 auth [soil@32473 actor="admin" action="login_failed" ip="127.0.0.1"] login_failed: wrong password
+<132>1 2026-11-08T12:25:16.438Z Lexryte4 soil-server 29136 auth [soil@32473 actor="admin" action="login_failed" ip="127.0.0.1"] login_failed: wrong password
+<132>1 2026-11-08T12:37:42.063Z Lexryte4 soil-server 15632 motion [soil@32473 device="celery-node-01" sensor="pir-1"] Motion detected near the celery bed (sensor pir-1) - red LED is on
+<133>1 2026-11-08T12:39:21.563Z Lexryte4 soil-server 24748 report [soil@32473 date="2026-11-08" avg_mm="28.1" waterings="5" water_ml="1530" motion="2" offline_min="111"] Daily report 2026-11-08: avg 28.1 mm (min 24.2, max 32.7), 5 watering(s), 1530 ml water, 2 motion event(s), 111 min offline
+<133>1 2026-11-08T12:34:14.659Z Lexryte4 soil-server 27292 auth [soil@32473 actor="admin" action="login_success" ip="127.0.0.1"] login_success: password + OTP ok, session ends 2026-11-08T12:44:14.656Z
+<133>1 2026-11-08T12:34:15.210Z Lexryte4 soil-server 27292 backup [soil@32473 actor="admin" action="backup_created" ip="127.0.0.1"] backup_created: manual backup backup-2026-11-08T12-34-15-196Z.json: 170 readings, 73 KB, AES-256-GCM + RSA-3072-OAEP, Ed25519-signed
+<133>1 2026-11-08T12:39:21.236Z Lexryte4 soil-server 24748 device [soil@32473 actor="celery-node-01" action="device_online" ip="127.0.0.1"] device_online: Device celery-node-01 reconnected
+<134>1 2026-11-08T12:39:36.357Z Lexryte4 soil-server 24748 reading [soil@32473 device="celery-node-01" reading="298" moisture_mm="25.41" pump="off" water_ml="0"] Reading #298: soil 25.4 mm, pump off
+<134>1 2026-11-08T12:39:37.365Z Lexryte4 soil-server 24748 reading [soil@32473 device="celery-node-01" reading="299" moisture_mm="25.27" pump="off" water_ml="0"] Reading #299: soil 25.3 mm, pump off

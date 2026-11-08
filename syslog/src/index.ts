@@ -36,7 +36,9 @@ const collector = new SyslogCollector({
 });
 
 await collector.start();
-console.log(`Syslog collector on tls://${host}:${port} (RFC 5424, octet counting) -> ${path.relative(ROOT, logFile)}`);
+console.log(
+  `Syslog collector on tls://${host}:${port} (RFC 5424, octet counting) -> ${path.relative(ROOT, logFile)}`,
+);
 
 const shutdown = (): void => {
   void collector.stop().then(() => {

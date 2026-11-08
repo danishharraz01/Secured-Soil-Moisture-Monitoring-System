@@ -1,0 +1,32 @@
+
+
+
+Starting PostgreSQL...
+Docker not found - starting embedded PostgreSQL 16 (data/pg)...
+Embedded PostgreSQL running on localhost:5432
+
+────────────────────────────────────────────────────────────────────────
+ Secured Soil Moisture Monitoring System - demo
+────────────────────────────────────────────────────────────────────────
+  Virtual Garden     http://localhost:4000
+  API server         https://localhost:8443   phone on Wi-Fi: https://192.168.0.12:8443
+  Syslog collector   tls://localhost:6514 -> logs/syslog.log
+  Log in             usernames + passwords in CREDENTIALS.txt
+  OTP code           newest outbox/email-*.txt (no SMTP configured)
+  Android emulator   adb reverse tcp:8443 tcp:8443  then use https://localhost:8443
+  Try to break it    npm run attack   (in another terminal)
+  Stop               Ctrl+C
+────────────────────────────────────────────────────────────────────────
+
+[syslog] Syslog collector on tls://127.0.0.1:6514 (RFC 5424, octet counting) -> logs\syslog.log
+[device] Virtual Garden:  http://localhost:4000
+[device] Device celery-node-01 -> https://localhost:8443 (certificate pinned, AES-128-GCM + HMAC-SHA256)
+[device] Send failed: server unreachable (connection refused) - queueing and retrying with backoff
+[syslog] 20:36:19 ---- collector: client connected 127.0.0.1:50195 (TLSv1.3)
+[server] [20:36:19] INFO: Syslog collector connected (tls://localhost:6514)
+[syslog] 20:36:19 NOTE server   API server started
+[server] [20:36:19] INFO: Encrypted backup every 10 min to cloud/ (keeps 20)
+[server] [20:36:19] INFO: API server listening on https://localhost:8443 (TLS 1.2+, 0.0.0.0)
+[server] [20:36:19] INFO: Email: files in outbox/ · SMS: files in outbox/
+[syslog] 20:36:20 INFO reading  Reading #145: soil 27.8 mm, pump off [soil@32473 device="celery-node-01" reading="145" moisture_mm="27.79" pump="off" water_ml="0"]
+[device] Server link restored - sending 1 queued message(s)

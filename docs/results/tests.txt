@@ -1,0 +1,195 @@
+ RUN  v5.1.0 .
+ ✓ |device| test/physics.test.ts > pump control with hysteresis (Flow 1) > switches the pump ON at <= 24.5 mm
+ ✓ |device| test/physics.test.ts > pump control with hysteresis (Flow 1) > keeps watering between the thresholds (no flapping)
+ ✓ |device| test/physics.test.ts > pump control with hysteresis (Flow 1) > switches the pump OFF at >= 32 mm (prevents waterlogging)
+ ✓ |device| test/physics.test.ts > pump control with hysteresis (Flow 1) > stays off between the thresholds while drying
+ ✓ |device| test/physics.test.ts > pump control with hysteresis (Flow 1) > runs a full cycle: dry -> ON -> wet -> OFF
+ ✓ |device| test/physics.test.ts > soil physics > uses daytime 09:00-17:59
+ ✓ |device| test/physics.test.ts > soil physics > evaporates 0.36-0.48 mm per 10 min by day and 0.14-0.26 mm at night
+ ✓ |device| test/physics.test.ts > soil physics > scales with the step length
+ ✓ |device| test/physics.test.ts > soil physics > pump adds 1.3 mm per 10 min and reports the water used
+ ✓ |device| test/physics.test.ts > soil physics > never leaves 0-50 mm
+ ✓ |device| test/physics.test.ts > soil physics > sensor noise stays within +-0.12 mm
+ ✓ |shared| test/constants.test.ts > MOISTURE constants > match the proposal (mm, 0-50, pump on at 24.5, off at 32)
+ ✓ |shared| test/constants.test.ts > MOISTURE constants > defaults are themselves valid thresholds
+ ✓ |shared| test/constants.test.ts > validThresholds(low, high) > accepts low=24.5 high=32
+ ✓ |shared| test/constants.test.ts > validThresholds(low, high) > accepts low=5 high=7
+ ✓ |shared| test/constants.test.ts > validThresholds(low, high) > accepts low=48 high=50
+ ✓ |shared| test/constants.test.ts > validThresholds(low, high) > accepts low=28.1 high=30.1
+ ✓ |shared| test/constants.test.ts > validThresholds(low, high) > rejects low=4.9 high=32 (low below 5)
+ ✓ |shared| test/constants.test.ts > validThresholds(low, high) > rejects low=24.5 high=50.1 (high above 50)
+ ✓ |shared| test/constants.test.ts > validThresholds(low, high) > rejects low=30 high=31.9 (gap below 2 mm)
+ ✓ |shared| test/constants.test.ts > validThresholds(low, high) > rejects low=32 high=24.5 (low above high)
+ ✓ |shared| test/constants.test.ts > validThresholds(low, high) > rejects low=NaN high=32 (NaN)
+ ✓ |shared| test/constants.test.ts > validThresholds(low, high) > rejects low=24.5 high=Infinity (Infinity)
+ ✓ |shared| test/constants.test.ts > protocol patterns > accepts the demo device ID and rejects injection attempts
+ ✓ |shared| test/constants.test.ts > protocol patterns > accepts only 16-byte lowercase hex nonces
+ ✓ |shared| test/syslog.test.ts > RFC 5424 formatting > builds PRI, header, structured data and message
+ ✓ |shared| test/syslog.test.ts > RFC 5424 formatting > uses "-" when there is no structured data and maps severities
+ ✓ |shared| test/syslog.test.ts > RFC 5424 formatting > escapes ", \ and ] in values and strips newlines (log injection)
+ ✓ |shared| test/syslog.test.ts > RFC 5424 formatting > round-trips through the parser
+ ✓ |shared| test/syslog.test.ts > RFC 6587 octet counting > frames with the byte length (UTF-8 aware)
+ ✓ |shared| test/syslog.test.ts > RFC 6587 octet counting > splits a stream into messages, keeping an incomplete tail
+ ✓ |shared| test/syslog.test.ts > RFC 6587 octet counting > handles a frame split across TCP packets
+ ✓ |shared| test/syslog.test.ts > RFC 6587 octet counting > rejects garbage and oversized frames
+ ✓ |shared| test/syslog.test.ts > RFC 6587 octet counting > keeps the messages that arrived before a bad frame
+ ✓ |shared| test/crypto.test.ts > HKDF key derivation > matches the RFC 5869 test case 1 vector
+ ✓ |shared| test/crypto.test.ts > HKDF key derivation > derives different 16-byte enc and 32-byte mac keys from one secret
+ ✓ |shared| test/crypto.test.ts > HKDF key derivation > is deterministic for the same secret
+ ✓ |shared| test/crypto.test.ts > HKDF key derivation > rejects secrets shorter than 256 bits
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > round-trips with AES-128-GCM
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > round-trips with AES-256-GCM
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > round-trips JSON
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > uses a fresh random IV every time (same plaintext -> different ciphertext)
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > does not leak the plaintext in the envelope
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > detects a single flipped bit in the ciphertext
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > detects a single flipped bit in the IV
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > detects a single flipped bit in the auth tag
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > fails with the wrong key
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > fails when the AAD (device ID) differs
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > rejects a key whose size does not match the envelope algorithm
+ ✓ |shared| test/crypto.test.ts > AES-GCM encryption > rejects invalid key sizes
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > accepts a real envelope
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > rejects plain JSON reading
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > rejects null
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > rejects array
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > rejects string
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > rejects extra field
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > rejects wrong version
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > rejects unknown algorithm
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > rejects non-base64 ciphertext
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > rejects short IV
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > rejects truncated tag
+ ✓ |shared| test/crypto.test.ts > isEncryptedEnvelope > makes aesGcmDecrypt throw on malformed input
+ ✓ |shared| test/crypto.test.ts > Request signing (HMAC-SHA256) > builds METHOD\nPATH\nTIMESTAMP\nNONCE\nSHA256(BODY)
+ ✓ |shared| test/crypto.test.ts > Request signing (HMAC-SHA256) > matches the RFC 4231 HMAC-SHA256 test case 2 vector
+ ✓ |shared| test/crypto.test.ts > Request signing (HMAC-SHA256) > verifies a valid signature
+ ✓ |shared| test/crypto.test.ts > Request signing (HMAC-SHA256) > rejects a signature over a different body, nonce, timestamp or path
+ ✓ |shared| test/crypto.test.ts > Request signing (HMAC-SHA256) > rejects a signature made with a different key
+ ✓ |shared| test/crypto.test.ts > constantTimeEqual > compares equal and different values
+ ✓ |shared| test/crypto.test.ts > constantTimeEqual > returns false (does not throw) for different lengths
+ ✓ |shared| test/crypto.test.ts > constantTimeEqual > works with Buffers
+ ✓ |server| test/unit/auth.test.ts > OTP > is always exactly 6 digits (leading zeros kept)
+ ✓ |server| test/unit/auth.test.ts > OTP > is roughly uniform (no obvious bias)
+ ✓ |server| test/unit/auth.test.ts > OTP > is stored as an HMAC bound to its challenge
+ ✓ |server| test/unit/auth.test.ts > OTP > masks the email address shown on the OTP screen
+ ✓ |server| test/unit/auth.test.ts > brute-force limiter (5 failures / 5 min -> 5 min block) > blocks on the 5th failure within the window
+ ✓ |server| test/unit/auth.test.ts > brute-force limiter (5 failures / 5 min -> 5 min block) > unblocks after 5 minutes
+ ✓ |server| test/unit/auth.test.ts > brute-force limiter (5 failures / 5 min -> 5 min block) > forgets failures older than the window
+ ✓ |server| test/unit/auth.test.ts > brute-force limiter (5 failures / 5 min -> 5 min block) > is per IP and resets after a successful login
+ ✓ |server| test/unit/auth.test.ts > audit severities > device_offline -> crit
+ ✓ |server| test/unit/auth.test.ts > audit severities > chain_tamper_detected -> crit
+ ✓ |server| test/unit/auth.test.ts > audit severities > login_failed -> warning
+ ✓ |server| test/unit/auth.test.ts > audit severities > otp_wrong -> warning
+ ✓ |server| test/unit/auth.test.ts > audit severities > forbidden -> warning
+ ✓ |server| test/unit/auth.test.ts > audit severities > device_rejected -> warning
+ ✓ |server| test/unit/auth.test.ts > audit severities > reading_anomaly -> warning
+ ✓ |server| test/unit/auth.test.ts > audit severities > login_blocked -> warning
+ ✓ |server| test/unit/auth.test.ts > audit severities > login_success -> notice
+ ✓ |server| test/unit/auth.test.ts > audit severities > config_changed -> notice
+ ✓ |server| test/unit/auth.test.ts > audit severities > backup_created -> notice
+ ✓ |server| test/unit/auth.test.ts > audit severities > keeps attacker-controlled values short and on one line
+ ✓ |device| test/simulator.test.ts > DeviceSimulator > sends one encrypted reading per tick with simulated time +10 min
+ ✓ |device| test/simulator.test.ts > DeviceSimulator > waters on its own: pump ON at <= 24.5 mm, OFF at >= 32 mm
+ ✓ |device| test/simulator.test.ts > DeviceSimulator > keeps watering when the server is down (control is on the device)
+ ✓ |device| test/simulator.test.ts > DeviceSimulator > keeps only the newest readings while the server is down
+ ✓ |device| test/simulator.test.ts > DeviceSimulator > "Simulate disconnect" stops all sending, then flushes the queue on reconnect
+ ✓ |device| test/simulator.test.ts > DeviceSimulator > motion turns the red LED on and sends a motion event
+ ✓ |device| test/simulator.test.ts > DeviceSimulator > applies thresholds only from a verified reply, and logs ignored replies
+ ✓ |device| test/simulator.test.ts > DeviceSimulator > logs each send with encrypted / signed / server status
+ ✓ |device| test/link.test.ts > ServerLink (pinned HTTPS, encrypted + signed) > delivers an encrypted, signed reading the server can verify and decrypt
+ ✓ |device| test/link.test.ts > ServerLink (pinned HTTPS, encrypted + signed) > accepts thresholds only from a signed reply that echoes the nonce
+ ✓ |device| test/link.test.ts > ServerLink (pinned HTTPS, encrypted + signed) > ignores a forged reply and says why
+ ✓ |device| test/link.test.ts > ServerLink (pinned HTTPS, encrypted + signed) > ignores a wrong-nonce reply and says why
+ ✓ |device| test/link.test.ts > ServerLink (pinned HTTPS, encrypted + signed) > ignores a unsafe reply and says why
+ ✓ |device| test/link.test.ts > ServerLink (pinned HTTPS, encrypted + signed) > refuses a server whose certificate is not the pinned one (MITM)
+ ✓ |device| test/link.test.ts > ServerLink (pinned HTTPS, encrypted + signed) > reports 5xx as retryable
+ ✓ |device| test/link.test.ts > ServerLink (pinned HTTPS, encrypted + signed) > reports an unreachable server as retryable
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > round-trips: all five checks pass and the data comes back unchanged
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > contains no readable data - only ciphertext and metadata
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > uses a fresh data key every time
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > rejects a modified envelope (signature)
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > rejects modified ciphertext (signature no longer matches)
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > cannot be opened with the wrong private key
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > detects modified ciphertext even when the attacker can re-sign (GCM tag)
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > detects a broken hash chain inside the backup
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > detects missing newest readings (head mismatch) even without the chain key
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > rejects files that are not backups
+ ✓ |server| test/unit/backup.test.ts > encrypted backup > canonical JSON sorts keys at every level
+ ✓ |syslog| test/collector.test.ts > syslog collector > receives RFC 5424 messages over TLS, prints them by severity and appends raw lines to the log file
+ ✓ |server| test/unit/keys-tls.test.ts > device secret encryption at rest > round-trips and never contains the plaintext secret
+ ✓ |server| test/unit/keys-tls.test.ts > device secret encryption at rest > cannot be copied to another device row (AAD binds the device ID)
+ ✓ |server| test/unit/keys-tls.test.ts > device secret encryption at rest > fails with a different master key
+ ✓ |server| test/unit/keys-tls.test.ts > key generation > Ed25519 key pair signs and verifies
+ ✓ |server| test/unit/keys-tls.test.ts > key generation > RSA key pair is 3072 bits
+ ✓ |server| test/unit/keys-tls.test.ts > self-signed TLS certificate + pinning > is ECDSA P-256 with the requested SANs
+ ✓ |server| test/unit/keys-tls.test.ts > self-signed TLS certificate + pinning > a client that pins the cert connects; one that pins another cert is refused
+ ✓ |server| test/unit/password.test.ts > scrypt password hashing > verifies the right password and rejects a wrong one
+ ✓ |syslog| test/collector.test.ts > syslog collector > client queues while the collector is down and flushes when it comes up
+ ✓ |syslog| test/collector.test.ts > syslog collector > keeps at most 2000 queued messages (oldest dropped)
+ ✓ |syslog| test/collector.test.ts > syslog collector > client refuses a collector with a different certificate (pinning)
+ ✓ |syslog| test/collector.test.ts > syslog collector > drops a connection that sends garbage instead of octet-counted frames
+ ✓ |server| test/unit/password.test.ts > scrypt password hashing > uses a different random salt per user (same password -> different hash)
+ ✓ |server| test/unit/password.test.ts > scrypt password hashing > stores the parameters with the hash and never the password
+ ✓ |server| test/unit/password.test.ts > scrypt password hashing > returns false (does not throw) for malformed stored hashes
+ ✓ |server| test/unit/password.test.ts > generatePassword > produces 4 groups of 5 unambiguous characters
+ ✓ |server| test/unit/password.test.ts > generatePassword > is random
+ ✓ |integration| test/integration/auth-api.test.ts > Flow 2: login -> OTP -> session > logs in with password + emailed OTP and returns a 10-minute session
+ ✓ |integration| test/integration/auth-api.test.ts > Flow 2: login -> OTP -> session > gives the same generic error for a wrong password and an unknown user
+ ✓ |integration| test/integration/auth-api.test.ts > Flow 2: login -> OTP -> session > ONE wrong OTP invalidates the challenge -> back to login (restart: true)
+ ✓ |integration| test/integration/auth-api.test.ts > Flow 2: login -> OTP -> session > an OTP can only be used once
+ ✓ |integration| test/integration/auth-api.test.ts > Flow 2: login -> OTP -> session > an OTP expires after 5 minutes
+ ✓ |integration| test/integration/auth-api.test.ts > Flow 2: login -> OTP -> session > stores only an HMAC of the OTP, never the code
+ ✓ |integration| test/integration/auth-api.test.ts > Flow 2: login -> OTP -> session > blocks an IP for 5 minutes after 5 failures (429 + Retry-After)
+ ✓ |integration| test/integration/auth-api.test.ts > Flow 2: login -> OTP -> session > logout deletes the session
+ ✓ |integration| test/integration/auth-api.test.ts > sessions > have a HARD 10-minute limit: no renewal, then 401 reason "expired"
+ ✓ |integration| test/integration/auth-api.test.ts > sessions > reject requests without or with a forged token
+ ✓ |integration| test/integration/auth-api.test.ts > roles (enforced on the server) > viewer gets 403 for admin actions, and it is audited
+ ✓ |integration| test/integration/auth-api.test.ts > roles (enforced on the server) > viewer can read data
+ ✓ |integration| test/integration/auth-api.test.ts > roles (enforced on the server) > admin can change thresholds (validated); the device receives them in the signed reply
+ ✓ |integration| test/integration/auth-api.test.ts > app API > readings, devices, alerts and activity
+ ✓ |integration| test/integration/auth-api.test.ts > app API > daily report: average / min / max, waterings, water and motion
+ ✓ |integration| test/integration/auth-api.test.ts > app API > writes a daily report line to syslog when the device clock passes midnight
+ ✓ |integration| test/integration/auth-api.test.ts > app API > /api/verify reports tampering once (critical alert + syslog CRIT)
+ ✓ |integration| test/integration/auth-api.test.ts > app API > admin sees the audit log with suspicious entries flagged
+ ✓ |integration| test/integration/auth-api.test.ts > app API > rejects non-JSON bodies and never leaks stack traces
+ ✓ |integration| test/integration/backup-api.test.ts > encrypted cloud backup > admin creates a backup that only the offline key can open
+ ✓ |integration| test/integration/backup-api.test.ts > encrypted cloud backup > viewer cannot trigger a backup (403, audited)
+ ✓ |integration| test/integration/backup-api.test.ts > encrypted cloud backup > keeps only the newest N backups
+ ✓ |integration| test/integration/device-channel.test.ts > accepted messages > stores an encrypted, signed reading and replies with a signed, nonce-bound answer
+ ✓ |integration| test/integration/device-channel.test.ts > accepted messages > sends security headers and never reveals the framework
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > SQL injection in device ID -> 400 (invalid_device_id)
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > unknown device -> 401 (unknown_device)
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > 5-minute-old request -> 401 (stale_timestamp)
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > request from the future -> 401 (stale_timestamp)
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > malformed nonce -> 400 (bad_nonce)
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > no signature -> 401 (missing_signature)
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > signature made with the wrong key -> 401
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > ciphertext modified in transit (signature no longer matches) -> 401
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > modified ciphertext even with a valid signature -> 400 (GCM tag fails)
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > unencrypted payload with a VALID signature -> 400 "Payload must be encrypted"
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > replayed request -> 409
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > moisture 450 mm -> 422
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > negative water -> 422
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > unknown field -> 422
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > unknown type -> 422
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > fake motion with a script sensor name -> 422
+ ✓ |integration| test/integration/device-channel.test.ts > rejections (checked in order, audited, syslog WARNING) > 5 KB payload -> 413
+ ✓ |integration| test/integration/device-channel.test.ts > Flow 1: pump notifications and anomalies > creates pump_on and pump_off alerts with the water used
+ ✓ |integration| test/integration/device-channel.test.ts > Flow 1: pump notifications and anomalies > flags a jump of more than 6 mm as an anomaly (audit + syslog WARNING)
+ ✓ |integration| test/integration/device-channel.test.ts > Flow 3: motion > alerts, logs WARNING and notifies the owner by SMS + email at most once per 2 minutes
+ ✓ |integration| test/integration/device-channel.test.ts > Flow 4: heartbeat, offline and reconnect > goes online, offline after 30 s of silence (CRIT + SMS/email), then reconnects
+ ✓ |integration| test/integration/device-channel.test.ts > Flow 4: heartbeat, offline and reconnect > purges nonces older than 10 minutes
+ ✓ |integration| test/integration/chain.test.ts > hash chain > verifies an untouched chain
+ ✓ |integration| test/integration/chain.test.ts > hash chain > links each reading to the previous hash
+ ✓ |integration| test/integration/chain.test.ts > hash chain > detects an edited value
+ ✓ |integration| test/integration/chain.test.ts > hash chain > detects an edited value even if the attacker recomputes a plain SHA-256
+ ✓ |integration| test/integration/chain.test.ts > hash chain > detects a deleted reading in the middle
+ ✓ |integration| test/integration/chain.test.ts > hash chain > detects reordered readings
+ ✓ |integration| test/integration/chain.test.ts > hash chain > detects deletion of the newest readings (signed head)
+ ✓ |integration| test/integration/chain.test.ts > hash chain > detects a forged head (attacker cannot sign without the server key)
+ ✓ |integration| test/integration/chain.test.ts > hash chain > accepts a head re-signed by the real server key (sanity check of the signature)
+ Test Files  15 passed (15)
+      Tests  190 passed (190)
+   Start at  20:41:44
+   Duration  38.73s (tests 88%, transform 7%, import 5%)

@@ -1,0 +1,21 @@
++0: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++1: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++2: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++3: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++4: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++5: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++6: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++7: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++8: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++9: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++10: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++11: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++12: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++13: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++14: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++15: ./test/flow_test.dart: rejects a plain http:// server URL before sending anything
++16: ./test/flow_test.dart: wrong password shows the generic error and clears the password
++17: ./test/flow_test.dart: password -> OTP -> dashboard (viewer, device offline banner)
++18: ./test/flow_test.dart: a wrong OTP sends the user back to login with the reason
++19: ./test/flow_test.dart: the session countdown reaching 00:00 logs out and explains why
++20: All tests passed!

@@ -1,0 +1,114 @@
+# CI: type checks, lint, unit + integration tests against PostgreSQL 16,
+# then the red-team attack script against a running server (must report
+# "0 got through"), and the Flutter app's analyzer + tests.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node:
+    name: Node.js - tests + attack script
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: soil
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: soil
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U soil -d soil"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      # Real environment variables take precedence over the .env that setup creates.
+      DATABASE_URL: postgresql://soil:ci-only-password@localhost:5432/soil?schema=public
+      TEST_DATABASE_URL: postgresql://soil:ci-only-password@localhost:5432/soil_test?schema=public
+      ADMIN_EMAIL: owner@example.com
+      VIEWER_EMAIL: viewer@example.com
+      ADMIN_PHONE: '+60123456789'
+      NO_COLOR: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup (TLS certificate, keys, migrations, device, users)
+        run: npm run setup
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Formatting
+        run: npm run format:check
+
+      - name: Unit + integration tests
+        run: npm test
+
+      - name: Start the API server
+        run: |
+          npm run server > server.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -sf --cacert certs/server.crt https://localhost:8443/api/health > /dev/null; then
+              echo "server is up"; exit 0
+            fi
+            sleep 1
+          done
+          echo "server did not start"; cat server.log; exit 1
+
+      - name: Attack script (must report 0 got through)
+        run: npm run attack -- --tamper-db
+
+      - name: Server log
+        if: always()
+        run: cat server.log || true
+
+  flutter:
+    name: Flutter - analyze + test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.9
+          cache: true
+
+      - name: Placeholder pinned certificate
+        # The real one is generated per installation by `npm run setup` (gitignored).
+        run: |
+          mkdir -p assets
+          openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
+            -keyout /dev/null -out assets/server.crt -days 1 -subj "/CN=ci-placeholder"
+
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
