@@ -50,5 +50,5 @@ fs.mkdirSync(path.dirname(out), { recursive: true });
 fs.writeFileSync(out, JSON.stringify(data, null, 2), { mode: 0o600 });
 const last = data.readings[data.readings.length - 1];
 console.log(`\nRestored ${data.readings.length} readings (backup made ${data.createdAt}).`);
-if (last) console.log(`Newest: ${new Date(last.ts).toLocaleString()}  moisture ${last.moisture}%  pump ${last.pump_on ? 'on' : 'off'}`);
+if (last) console.log(`Newest: ${new Date(last.ts).toLocaleString()}  moisture ${last.moisture} mm  pump ${last.pump_on ? 'on' : 'off'}`);
 console.log(`Written to ${path.relative(ROOT, out)}`);

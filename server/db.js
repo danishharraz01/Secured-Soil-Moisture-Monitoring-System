@@ -9,15 +9,15 @@ const SCHEMA = `
 CREATE TABLE IF NOT EXISTS devices (
   id          TEXT PRIMARY KEY,
   secret_enc  TEXT NOT NULL,          -- device key, encrypted with the server master key
-  low         REAL NOT NULL,          -- start watering below this %
-  high        REAL NOT NULL,          -- stop watering at this %
+  low         REAL NOT NULL,          -- pump on at or below this soil moisture (mm)
+  high        REAL NOT NULL,          -- pump off at this soil moisture (mm)
   enabled     INTEGER NOT NULL DEFAULT 1
 );
 CREATE TABLE IF NOT EXISTS readings (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   device_id   TEXT NOT NULL,
   ts          INTEGER NOT NULL,       -- simulated garden time
-  moisture    REAL NOT NULL,
+  moisture    REAL NOT NULL,          -- soil moisture in mm (0-50)
   pump_on     INTEGER NOT NULL,
   water_ml    REAL NOT NULL,
   received_at INTEGER NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS alerts (
   id       INTEGER PRIMARY KEY AUTOINCREMENT,
   at       INTEGER NOT NULL,
   sim_time INTEGER,
-  type     TEXT NOT NULL,            -- sprinkler_on | motion | tamper
+  type     TEXT NOT NULL,            -- sprinkler_on (water pump on) | motion | tamper
   level    TEXT NOT NULL,            -- info | warning | critical
   message  TEXT NOT NULL
 );

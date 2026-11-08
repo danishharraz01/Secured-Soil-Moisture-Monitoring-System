@@ -52,7 +52,7 @@ async function refresh() {
   const [{ readings, totals }, cfg, al] = await Promise.all([poll('/api/readings?limit=150'), poll('/api/config'), poll('/api/alerts')]);
   const last = readings[readings.length - 1];
   if (last) {
-    $('moisture').textContent = last.moisture.toFixed(1) + '%';
+    $('moisture').textContent = last.moisture.toFixed(1) + ' mm';
     $('pump').textContent = last.pump_on ? 'Watering' : 'Off';
     $('simtime').textContent = new Date(last.ts).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' });
   }
@@ -68,22 +68,23 @@ async function refresh() {
     li.append(m, t);
     return li;
   }));
-  drawChart(readings, cfg[0] || { low: 60, high: 80 });
+  drawChart(readings, cfg[0] || { low: 24.5, high: 32 });
   if (me.role === 'admin') loadAudit();
 }
 
 function drawChart(rows, { low, high }) {
   const c = $('chart');
   const ctx = c.getContext('2d');
-  const W = c.width, H = c.height, padL = 36, padB = 20, padT = 10;
+  const W = c.width, H = c.height, padL = 44, padB = 20, padT = 10;
   ctx.clearRect(0, 0, W, H);
   const x = (i) => padL + (i / Math.max(rows.length - 1, 1)) * (W - padL - 8);
-  const y = (v) => padT + (1 - v / 100) * (H - padT - padB);
+  const MAX_MM = 50;
+  const y = (v) => padT + (1 - Math.min(Math.max(v, 0), MAX_MM) / MAX_MM) * (H - padT - padB);
 
   ctx.font = '11px system-ui'; ctx.fillStyle = '#6b7566'; ctx.strokeStyle = '#eef0eb';
-  for (let v = 0; v <= 100; v += 20) {
+  for (let v = 0; v <= MAX_MM; v += 10) {
     ctx.beginPath(); ctx.moveTo(padL, y(v)); ctx.lineTo(W, y(v)); ctx.stroke();
-    ctx.fillText(v + '%', 4, y(v) + 4);
+    ctx.fillText(v + ' mm', 2, y(v) + 4);
   }
   ctx.fillStyle = 'rgba(63,125,58,0.13)';
   const bw = (W - padL) / Math.max(rows.length, 1);

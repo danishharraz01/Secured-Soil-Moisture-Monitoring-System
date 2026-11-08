@@ -34,14 +34,14 @@
 
     <div class="stats">
       <div class="card"><small>Soil moisture</small><strong id="moisture">–</strong></div>
-      <div class="card"><small>Sprinkler</small><strong id="pump">–</strong></div>
+      <div class="card"><small>Water pump</small><strong id="pump">–</strong></div>
       <div class="card"><small>Motion sensor</small><strong id="motion"><span class="led" id="led"></span><span id="motion-text">–</span></strong></div>
       <div class="card"><small>Water used</small><strong id="water">–</strong></div>
     </div>
 
     <div class="card">
       <canvas id="chart" width="900" height="260"></canvas>
-      <p class="hint">Blue line is moisture. Dashed lines are the watering thresholds. Shaded bars show when the sprinkler ran. Garden time: <span id="simtime">–</span></p>
+      <p class="hint">Blue line is moisture. Dashed lines are the watering thresholds. Shaded bars show when the water pump ran. Garden time: <span id="simtime">–</span></p>
     </div>
 
     <div class="card">
@@ -52,8 +52,8 @@
     <div class="row">
       <form id="config-form" class="card">
         <h2>Watering thresholds</h2>
-        <label>Start watering below (%) <input name="low" type="number" min="10" max="95" step="1" required></label>
-        <label>Stop watering at (%) <input name="high" type="number" min="10" max="95" step="1" required></label>
+        <label>Pump on when moisture ≤ (mm) <input name="low" type="number" min="5" max="50" step="0.5" required></label>
+        <label>Pump off at (mm) <input name="high" type="number" min="5" max="50" step="0.5" required></label>
         <button id="save-config">Save</button>
         <p id="config-msg" class="hint"></p>
       </form>

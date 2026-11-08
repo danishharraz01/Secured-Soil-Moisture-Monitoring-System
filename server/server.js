@@ -8,7 +8,7 @@ const S = require('./secrets');
 const syslog = require('./syslog');
 const { sendEmail, sendSms } = require('./notify');
 const { createBackup } = require('./backup');
-const { hmac, safeEqualHex, signingString, deviceKeys, decryptPayload } = require('../shared/lib');
+const { hmac, safeEqualHex, signingString, deviceKeys, decryptPayload, MOISTURE, validThresholds } = require('../shared/lib');
 
 if (!S.secrets) {
   console.error('Run `npm run setup` first.');
@@ -186,18 +186,18 @@ async function handleTelemetry(req, res) {
     }
   } else {
     const valid = b && b.type === 'reading'
-      && typeof b.moisture === 'number' && b.moisture >= 0 && b.moisture <= 100
+      && typeof b.moisture === 'number' && b.moisture >= 0 && b.moisture <= MOISTURE.max
       && typeof b.pumpOn === 'boolean'
       && typeof b.waterMl === 'number' && b.waterMl >= 0 && b.waterMl <= 2000
       && Number.isInteger(b.simTime);
     if (!valid) return reject(400, 'Invalid payload');
 
     const last = db.prepare('SELECT moisture, pump_on FROM readings WHERE device_id = ? ORDER BY id DESC LIMIT 1').get(deviceId);
-    // Plausibility check: real soil doesn't jump 15% in one reading. Flag it for review.
-    if (last && Math.abs(last.moisture - b.moisture) > 15) audit(`device:${deviceId}`, 'anomaly', { from: last.moisture, to: b.moisture }, ip);
-    // "Relay module activates sprinkler -> send notification to user"
+    // Plausibility check: real soil doesn't jump 6 mm in one reading. Flag it for review.
+    if (last && Math.abs(last.moisture - b.moisture) > 6) audit(`device:${deviceId}`, 'anomaly', { from: last.moisture, to: b.moisture }, ip);
+    // "Relay module turns water pump on -> send notification to user"
     if (b.pumpOn && (!last || !last.pump_on)) {
-      addAlert('sprinkler_on', 'info', `Soil dropped to ${(Math.floor(b.moisture * 10) / 10).toFixed(1)}% (below ${dev.low}%), relay switched the sprinkler on`, b.simTime);
+      addAlert('sprinkler_on', 'info', `Soil moisture ${(Math.floor(b.moisture * 10) / 10).toFixed(1)} mm (≤ ${dev.low} mm), relay switched the water pump on`, b.simTime);
     }
 
     insertReading({
@@ -207,7 +207,7 @@ async function handleTelemetry(req, res) {
     syslog.log({
       facility: 'sensor', severity: 'info', msgId: 'reading',
       data: { device: deviceId, moisture: b.moisture.toFixed(1), pump: b.pumpOn ? 'on' : 'off' },
-      message: `moisture=${b.moisture.toFixed(1)}% pump=${b.pumpOn ? 'on' : 'off'}`,
+      message: `moisture=${b.moisture.toFixed(1)}mm pump=${b.pumpOn ? 'on' : 'off'}`,
     });
   }
 
@@ -426,9 +426,8 @@ async function route(req, res) {
     }
     const b = parseJson(await readBody(req, 1024)) || {};
     const { deviceId, low, high } = b;
-    const ok = typeof deviceId === 'string' && Number.isFinite(low) && Number.isFinite(high)
-      && low >= 10 && high <= 95 && high - low >= 5;
-    if (!ok) return send(res, 400, { error: 'Thresholds must be 10-95% with at least 5% between low and high' });
+    const ok = typeof deviceId === 'string' && validThresholds(low, high);
+    if (!ok) return send(res, 400, { error: 'Thresholds must be 5-50 mm, with "stop" at least 2 mm above "start"' });
     const before = db.prepare('SELECT low, high FROM devices WHERE id = ?').get(deviceId);
     if (!before) return send(res, 404, { error: 'No such device' });
     db.prepare('UPDATE devices SET low = ?, high = ? WHERE id = ?').run(low, high, deviceId);

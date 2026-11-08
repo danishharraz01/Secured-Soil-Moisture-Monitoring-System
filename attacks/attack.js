@@ -59,8 +59,8 @@ async function fullLogin(u) {
   report('Fake reading signed with a wrong key', await post(T, wrong.headers, wrong.body), [401]);
 
   // Eavesdropper (e.g. on the Wi-Fi, or if TLS were broken) captures a real request
-  const sniffed = signedTelemetry(device, reading(72));
-  const readable = /moisture|72/.test(sniffed.body);
+  const sniffed = signedTelemetry(device, reading(28));
+  const readable = /moisture/.test(sniffed.body);
   readable ? fail++ : pass++;
   console.log(`${readable ? 'NOT BLOCKED!' : 'BLOCKED '}  Eavesdropper reads a captured reading\n            -> sees only ciphertext: ${sniffed.body.slice(0, 70)}...\n`);
 
@@ -72,7 +72,7 @@ async function fullLogin(u) {
   const plain = signedTelemetry(device, reading(5), { plaintext: true });
   report('Unencrypted payload (even with a valid signature)', await post(T, plain.headers, plain.body), [400]);
 
-  const captured = signedTelemetry(device, reading(71));
+  const captured = signedTelemetry(device, reading(27.5));
   await post(T, captured.headers, captured.body); // the original, legit send
   report('Replay of a captured valid request', await post(T, captured.headers, captured.body), [409]);
 
@@ -82,7 +82,7 @@ async function fullLogin(u) {
   report('SQL injection in device ID', await post(T, { 'X-Device-Id': "x' OR '1'='1" }, '{}'), [401]);
 
   const bad = signedTelemetry(device, reading(450));
-  report('Out-of-range value (moisture 450%)', await post(T, bad.headers, bad.body), [400]);
+  report('Out-of-range value (moisture 450 mm)', await post(T, bad.headers, bad.body), [400]);
 
   const fakeMotion = signedTelemetry({ ...device, secret: crypto.randomBytes(32).toString('hex') }, { type: 'motion', sensor: 'pir-1', simTime: Date.now() });
   report('Fake motion alert to spam the owner with SMS', await post(T, fakeMotion.headers, fakeMotion.body), [401]);
@@ -101,12 +101,12 @@ async function fullLogin(u) {
     await post(URL_ + '/api/login/otp', J, JSON.stringify({ challengeId: admin.challengeId, code: admin.code })), [401]);
 
   const asViewer = { Cookie: viewer.cookie, ...J };
-  report('Viewer tries to set thresholds to 10-15% (kill the plant)',
-    await request(URL_ + '/api/config', { method: 'PUT', ca, headers: asViewer, body: JSON.stringify({ deviceId: device.deviceId, low: 10, high: 15 }) }), [403]);
+  report('Viewer tries to set thresholds to 5-7 mm (kill the plant)',
+    await request(URL_ + '/api/config', { method: 'PUT', ca, headers: asViewer, body: JSON.stringify({ deviceId: device.deviceId, low: 5, high: 7 }) }), [403]);
   report('Viewer tries to download a backup', await post(URL_ + '/api/backup', asViewer, '{}'), [403]);
 
   report('CSRF request without the dashboard header',
-    await request(URL_ + '/api/config', { method: 'PUT', ca, headers: { Cookie: admin.cookie, 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: device.deviceId, low: 10, high: 15 }) }), [403]);
+    await request(URL_ + '/api/config', { method: 'PUT', ca, headers: { Cookie: admin.cookie, 'Content-Type': 'application/json' }, body: JSON.stringify({ deviceId: device.deviceId, low: 5, high: 7 }) }), [403]);
 
   // Attacker knows the admin password (phished / leaked) but not the email OTP
   const s1 = JSON.parse((await post(URL_ + '/api/login', J, JSON.stringify({ username: 'admin', password: pw('admin') }))).body);
@@ -125,7 +125,7 @@ async function fullLogin(u) {
     const row = db.prepare('SELECT id, moisture FROM readings ORDER BY id LIMIT 1 OFFSET 3').get();
     db.prepare('UPDATE readings SET moisture = 99 WHERE id = ?').run(row.id);
     db.close();
-    console.log(`Changed reading #${row.id} from ${row.moisture}% to 99% in the database file.`);
+    console.log(`Changed reading #${row.id} from ${row.moisture} mm to 99 mm in the database file.`);
     const check = JSON.parse((await request(URL_ + '/api/verify', { ca, headers: { Cookie: admin.cookie } })).body);
     const detected = check.ok === false;
     detected ? pass++ : fail++;

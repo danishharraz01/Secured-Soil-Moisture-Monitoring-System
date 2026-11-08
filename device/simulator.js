@@ -1,5 +1,5 @@
 'use strict';
-// Virtual IoT node: soil moisture sensor + relay/sprinkler + PIR motion sensor + LED.
+// Virtual IoT node: soil moisture sensor + relay/water pump + PIR motion sensor + LED.
 // It replaces the hardware (Arduino/ESP32 + sensors) with a small physics model, but talks
 // to the server exactly like real firmware would: encrypted (AES-128-GCM), signed (HMAC-SHA256),
 // over HTTPS with a pinned certificate.
@@ -9,7 +9,7 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
-const { request, signedTelemetry } = require('../shared/lib');
+const { request, signedTelemetry, MOISTURE, validThresholds } = require('../shared/lib');
 
 const cfgPath = path.join(__dirname, 'device.json');
 if (!fs.existsSync(cfgPath)) { console.error('Run `npm run setup` first.'); process.exit(1); }
@@ -24,10 +24,11 @@ const LED_TICKS = 3;
 
 // ---- virtual garden ----
 const state = {
-  moisture: 70,            // % volumetric water content (what the sensor reports)
+  moisture: 30,            // soil moisture in mm (what the sensor reports, 0-50 mm)
   pumpOn: false,
   simTime: Date.now(),
-  thresholds: { low: 60, high: 80 }, // safe defaults until the server sends signed ones
+  // safe defaults until the server sends signed ones
+  thresholds: { low: MOISTURE.defaultLow, high: MOISTURE.defaultHigh },
   ledTicks: 0,             // red LED stays on for a few ticks after motion
   motionPending: false,
 };
@@ -37,27 +38,31 @@ function stepPhysics() {
   const hour = new Date(state.simTime).getHours();
   const daytime = hour >= 9 && hour < 18;
   // Celery is thirsty and the afternoon sun dries the pot faster.
-  const evaporation = (daytime ? 0.9 : 0.35) + Math.random() * 0.3;
+  const evaporation = (daytime ? 0.36 : 0.14) + Math.random() * 0.12;
   state.moisture -= evaporation;
   let waterMl = 0;
   if (state.pumpOn) {
-    waterMl = 120;                 // sprinkler runs for this tick
-    state.moisture += 3.2;
+    waterMl = 120;                 // water pump runs for this tick
+    state.moisture += 1.3;
   }
-  state.moisture = Math.min(100, Math.max(0, state.moisture));
+  state.moisture = Math.min(MOISTURE.max, Math.max(0, state.moisture));
   return waterMl;
 }
 
-// Edge control loop with hysteresis, so the relay doesn't flicker on and off.
+// Edge control loop (rule from the FYP proposal):
+//   Soil moisture <= 24.5 mm? Yes -> the microcontroller sends the instruction to the relay
+//   module (acting as a switch) to turn the water pump ON. It stays on until the soil reaches
+//   32 mm, then the relay switches the pump OFF.
+// The gap between the two values (hysteresis) stops the relay flickering on and off.
 // It runs on the device, so the plant still gets water if the network is down.
 function control() {
   const { low, high } = state.thresholds;
-  if (!state.pumpOn && state.moisture < low) state.pumpOn = true;
+  if (!state.pumpOn && state.moisture <= low) state.pumpOn = true;
   else if (state.pumpOn && state.moisture >= high) state.pumpOn = false;
 }
 
 function readSensor() {
-  const noise = (Math.random() - 0.5) * 0.6; // real sensors are noisy
+  const noise = (Math.random() - 0.5) * 0.24; // real sensors are noisy (±0.12 mm)
   return Math.round((state.moisture + noise) * 100) / 100;
 }
 
@@ -70,7 +75,7 @@ function applyServerReply(res, sentNonce) {
   if (!okSig) return 'BAD server signature, ignoring reply';
   const msg = JSON.parse(res.body);
   if (msg.nonce !== sentNonce || msg.deviceId !== device.deviceId) return 'reply not for this request, ignoring';
-  if (!(msg.low >= 10 && msg.high <= 95 && msg.high - msg.low >= 5)) return 'unsafe thresholds, ignoring';
+  if (!validThresholds(msg.low, msg.high)) return 'unsafe thresholds, ignoring';
   state.thresholds = { low: msg.low, high: msg.high };
   return null;
 }
@@ -102,10 +107,10 @@ async function tick() {
   }
 
   const note = await send({ type: 'reading', moisture, pumpOn: state.pumpOn, waterMl, simTime: state.simTime });
-  const bar = '#'.repeat(Math.round(moisture / 4)).padEnd(25, '.');
+  const bar = '#'.repeat(Math.round(moisture / 2)).padEnd(25, '.');
   const led = state.ledTicks > 0 ? 'LED red' : 'LED off';
   if (state.ledTicks > 0) state.ledTicks--;
-  console.log(`[${t}] ${bar} ${moisture.toFixed(1).padStart(5)}%  sprinkler ${state.pumpOn ? 'ON ' : 'off'}  ${led}  ${note}`);
+  console.log(`[${t}] ${bar} ${moisture.toFixed(1).padStart(4)} mm  pump ${state.pumpOn ? 'ON ' : 'off'}  ${led}  ${note}`);
 }
 
 if (process.stdin.isTTY) {

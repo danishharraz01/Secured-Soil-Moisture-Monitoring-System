@@ -11,7 +11,7 @@ const POLL_MS = 3000;
 const LED_ON_MS = 60_000; // red LED stays on for a minute after motion
 const SUSPICIOUS = /rejected|failed|blocked|forbidden|anomaly|otp_wrong|otp_locked|motion|idle/;
 const ALERT_TITLE: Record<Alert['type'], string> = {
-  sprinkler_on: 'Sprinkler turned on',
+  sprinkler_on: 'Water pump turned on',
   motion: 'Motion detected',
   tamper: 'Tampering detected',
 };
@@ -78,10 +78,11 @@ export function HomeScreen({ session, api, onLogout }: Props) {
 
   async function saveThresholds() {
     setConfigMsg('');
-    const low = Number(lowText);
-    const high = Number(highText);
-    if (!Number.isFinite(low) || !Number.isFinite(high) || low < 10 || high > 95 || high - low < 5) {
-      return setConfigMsg('Use 10–95%, with high at least 5% above low.');
+    // decimal-pad shows "," instead of "." on some phone locales
+    const low = Number(lowText.replace(',', '.'));
+    const high = Number(highText.replace(',', '.'));
+    if (!Number.isFinite(low) || !Number.isFinite(high) || low < 5 || high > 50 || high - low < 2) {
+      return setConfigMsg('Use 5–50 mm, with "off" at least 2 mm above "on".');
     }
     if (!config) return;
     try {
@@ -130,8 +131,8 @@ export function HomeScreen({ session, api, onLogout }: Props) {
       {error ? <Text style={styles.errorBox}>{error}</Text> : null}
 
       <View style={styles.statsRow}>
-        <Stat label="Soil moisture" value={last ? `${last.moisture.toFixed(1)}%` : '–'} />
-        <Stat label="Sprinkler" value={last ? (last.pump_on ? 'Watering' : 'Off') : '–'} color={last?.pump_on ? colors.green : undefined} />
+        <Stat label="Soil moisture" value={last ? `${last.moisture.toFixed(1)} mm` : '–'} />
+        <Stat label="Water pump" value={last ? (last.pump_on ? 'Watering' : 'Off') : '–'} color={last?.pump_on ? colors.green : undefined} />
       </View>
       <View style={styles.statsRow}>
         <View style={[styles.card, styles.stat]}>
@@ -146,8 +147,8 @@ export function HomeScreen({ session, api, onLogout }: Props) {
 
       <View style={styles.card}>
         <Text style={styles.h2}>Last {readings.length} readings</Text>
-        <MoistureChart readings={readings} low={config?.low ?? 60} high={config?.high ?? 80} />
-        <Text style={styles.hint}>Garden time {gardenTime}. Blue line is moisture, dashed lines are the thresholds, green bars show when the sprinkler ran.</Text>
+        <MoistureChart readings={readings} low={config?.low ?? 24.5} high={config?.high ?? 32} />
+        <Text style={styles.hint}>Garden time {gardenTime}. Blue line is moisture, dashed lines are the thresholds, green bars show when the water pump ran.</Text>
       </View>
 
       <View style={styles.card}>
@@ -166,14 +167,14 @@ export function HomeScreen({ session, api, onLogout }: Props) {
         <Text style={styles.h2}>Watering thresholds</Text>
         <View style={styles.row}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.label}>Start below (%)</Text>
-            <TextInput style={styles.input} value={lowText} editable={isAdmin} keyboardType="number-pad"
+            <Text style={styles.label}>Pump on at ≤ (mm)</Text>
+            <TextInput style={styles.input} value={lowText} editable={isAdmin} keyboardType="decimal-pad"
               onFocus={() => (editing.current = true)} onChangeText={setLowText} />
           </View>
           <View style={{ width: 12 }} />
           <View style={{ flex: 1 }}>
-            <Text style={styles.label}>Stop at (%)</Text>
-            <TextInput style={styles.input} value={highText} editable={isAdmin} keyboardType="number-pad"
+            <Text style={styles.label}>Pump off at (mm)</Text>
+            <TextInput style={styles.input} value={highText} editable={isAdmin} keyboardType="decimal-pad"
               onFocus={() => (editing.current = true)} onChangeText={setHighText} />
           </View>
         </View>

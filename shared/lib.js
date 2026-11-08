@@ -76,4 +76,10 @@ function signedTelemetry(device, payload, { ts = Date.now(), nonce = crypto.rand
   };
 }
 
-module.exports = { hmac, safeEqualHex, deviceKeys, encryptPayload, decryptPayload, signingString, request, signedTelemetry };
+// Soil moisture is measured in millimetres (sensor range 0-50 mm), as in the FYP proposal:
+// pump ON at <= 24.5 mm, OFF again at 32 mm.
+const MOISTURE = { unit: 'mm', max: 50, defaultLow: 24.5, defaultHigh: 32 };
+const validThresholds = (low, high) => Number.isFinite(low) && Number.isFinite(high)
+  && low >= 5 && high <= MOISTURE.max && high - low >= 2;
+
+module.exports = { MOISTURE, validThresholds, hmac, safeEqualHex, deviceKeys, encryptPayload, decryptPayload, signingString, request, signedTelemetry };

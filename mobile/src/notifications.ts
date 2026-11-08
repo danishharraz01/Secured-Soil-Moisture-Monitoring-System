@@ -1,4 +1,4 @@
-// Phone notifications for "sprinkler turned on", "motion detected" and "tampering".
+// Phone notifications for "water pump turned on", "motion detected" and "tampering".
 // These are local notifications raised by the app when it sees a new alert, which work in
 // Expo Go. Remote push (alerts while the app is fully closed) needs a development build and
 // Expo push / FCM; see README.

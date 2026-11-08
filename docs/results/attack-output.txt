@@ -7,7 +7,7 @@ BLOCKED   Fake reading signed with a wrong key
             -> 401 Bad signature
 
 BLOCKED   Eavesdropper reads a captured reading
-            -> sees only ciphertext: {"v":1,"alg":"AES-128-GCM","iv":"p2PA/LSUCqxAYmzx","ct":"RFun7gNbbN13q...
+            -> sees only ciphertext: {"v":1,"alg":"AES-128-GCM","iv":"bVidAlZpWw5Ws3AK","ct":"LPykKOY8PuR8l...
 
 BLOCKED   Encrypted reading modified in transit
             -> 401 Bad signature
@@ -24,7 +24,7 @@ BLOCKED   Request captured 5 minutes ago
 BLOCKED   SQL injection in device ID
             -> 401 Unknown device
 
-BLOCKED   Out-of-range value (moisture 450%)
+BLOCKED   Out-of-range value (moisture 450 mm)
             -> 400 Invalid payload
 
 BLOCKED   Fake motion alert to spam the owner with SMS
@@ -41,7 +41,7 @@ BLOCKED   Read readings without logging in
 BLOCKED   Reuse an OTP code that was already used
             -> 401 Code expired or already used. Please log in again.
 
-BLOCKED   Viewer tries to set thresholds to 10-15% (kill the plant)
+BLOCKED   Viewer tries to set thresholds to 5-7 mm (kill the plant)
             -> 403 Only admin can change thresholds
 
 BLOCKED   Viewer tries to download a backup
@@ -58,8 +58,8 @@ BLOCKED   Brute-force admin password
 
 === Insider / stolen DB: edit a stored reading directly ===
 
-Changed reading #4 from 66.08% to 99% in the database file.
-DETECTED  integrity check -> {"ok":false,"checked":450,"brokenAt":4,"reason":"Record content was modified after it was stored"}
+Changed reading #4 from 28.22 mm to 99 mm in the database file.
+DETECTED  integrity check -> {"ok":false,"checked":77,"brokenAt":4,"reason":"Record content was modified after it was stored"}
 
 Note: the chain stays broken from now on (that is the point). Run `npm run reset` for a clean database.
 

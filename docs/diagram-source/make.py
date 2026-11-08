@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Generates the updated block diagram and flowcharts as SVG, then they're rendered to PNG.
 from html import escape
 
@@ -30,7 +31,7 @@ def block_diagram():
     W, BW, BH, GX, GY, X0, Y0 = 1120, 210, 92, 60, 70, 40, 90
     rows = [
         [("Sense the soil moisture", "(virtual sensor)", 0), ("Microcontroller receives", "data from sensor", 0),
-         ("Relay module activates", "sprinkler (<60%, off at 80%)", 0), ("Send notification to user", "through application", 0)],
+         ("Relay switches water", "pump on (≤ 24.5 mm)", 0), ("Send notification to user", "through application", 0)],
         [("Microcontroller encrypts", "data (AES-128-GCM)", 1), ("Signs + sends over", "HTTPS (TLS, pinned cert)", 1),
          ("Server verifies & decrypts", "(signature, replay, input)", 1), ("Sends events to", "syslog server (TLS)", 1)],
         [("Open the Android", "application", 0), ("User logs in", "(password)", 1),
@@ -115,7 +116,7 @@ def flowchart():
     a = f.term(X, 120, 'Start')
     b = f.proc(X, 200, ['Sensor checks the', "soil's moisture"])
     c = f.proc(X, 290, ['Microcontroller', 'receives data'])
-    d = f.dec(X, 395, ['Moisture < 60%?'])
+    d = f.dec(X, 395, ['Soil moisture', '≤ 24.5 mm?'])
     e = f.proc(X, 510, ['Microcontroller encrypts', 'data (AES-128-GCM)'], sec=True)
     g = f.proc(X, 600, ['Sign (HMAC) + send', 'over HTTPS'], sec=True)
     h = f.dec(X, 710, ['Server: signature,', 'replay, values OK?'])
@@ -125,7 +126,7 @@ def flowchart():
     for p, q in [(a, b), (b, c), (c, d)]: f.down(p, q)
     f.down(d, e, 'No'); f.down(e, g); f.down(g, h); f.down(h, i, 'Yes'); f.down(i, j); f.down(j, k)
     # Yes branch: relay + notify
-    r1 = f.proc(X + 260, 395, ['Relay module', 'activates sprinkler'], w=180)
+    r1 = f.proc(X + 260, 395, ['Relay module turns', 'water pump on'], w=180)
     r2 = f.proc(X + 260, 485, ['Notify user', 'through application'], w=180)
     f.s.append(line(X + 95, 395, X + 260 - 93, 395)); f.s.append(label(X + 104, 386, 'Yes', 'start'))
     f.down(r1, r2)

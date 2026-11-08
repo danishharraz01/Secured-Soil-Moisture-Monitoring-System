@@ -60,8 +60,11 @@ const db = require('./server/db').open();
 
 const deviceId = 'celery-node-01';
 const deviceSecret = crypto.randomBytes(32).toString('hex');
-// Celery likes soil that stays evenly moist. These are starting values; tune them in the dashboard.
-db.prepare('INSERT INTO devices (id, secret_enc, low, high) VALUES (?, ?, ?, ?)').run(deviceId, S.encrypt(deviceSecret), 60, 80);
+// Celery likes soil that stays evenly moist. Pump on at <= 24.5 mm, off at 32 mm (FYP proposal);
+// these are starting values, tune them in the dashboard.
+const { MOISTURE } = require('./shared/lib');
+db.prepare('INSERT INTO devices (id, secret_enc, low, high) VALUES (?, ?, ?, ?)')
+  .run(deviceId, S.encrypt(deviceSecret), MOISTURE.defaultLow, MOISTURE.defaultHigh);
 
 function addUser(username, role, email, phone) {
   const password = crypto.randomBytes(9).toString('base64url');
