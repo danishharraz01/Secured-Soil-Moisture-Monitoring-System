@@ -1,0 +1,13 @@
+{
+  "name": "@soil/shared",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Crypto helpers and constants shared by the device, server, syslog and attack script.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

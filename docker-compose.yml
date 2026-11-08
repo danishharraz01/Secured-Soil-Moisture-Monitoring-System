@@ -1,0 +1,25 @@
+# PostgreSQL 16 for the Secured Soil Moisture Monitoring System.
+# Credentials come from .env (copy .env.example to .env first).
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: soil-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-soil}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-soil}
+    ports:
+      # Bound to localhost only - the database is never exposed to the LAN.
+      - '127.0.0.1:${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - soil-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+volumes:
+  soil-db-data:

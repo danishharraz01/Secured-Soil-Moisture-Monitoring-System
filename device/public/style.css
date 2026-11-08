@@ -1,0 +1,960 @@
+/* Virtual Garden - calm green / neutral, flat design. */
+:root {
+  --bg: #f3f6f1;
+  --card: #ffffff;
+  --ink: #1e2b25;
+  --muted: #66766e;
+  --line: #e1e7e2;
+  --green: #2e7d4f;
+  --green-soft: #e2f1e6;
+  --amber: #c96f2e;
+  --amber-soft: #fbeee2;
+  --red: #c4302b;
+  --red-soft: #fbe5e3;
+  --blue: #2f8fc9;
+  --blue-soft: #e1f0f9;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(20, 40, 30, 0.06), 0 4px 16px rgba(20, 40, 30, 0.05);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  color: var(--ink);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131a17;
+    --card: #1b2420;
+    --ink: #e4ece7;
+    --muted: #93a49b;
+    --line: #2b3832;
+    --green-soft: #1f3a2b;
+    --amber-soft: #3b2a1c;
+    --red-soft: #3d1f1d;
+    --blue-soft: #1b3042;
+    --shadow: none;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  line-height: 1.45;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-weight: 650;
+}
+h1 {
+  font-size: 1.2rem;
+}
+h2 {
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+/* ---------------- Top bar ---------------- */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 24px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.brand p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.brand-icon {
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--green-soft);
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.topbar-right {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.clock {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+.clock .label {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+#sim-time {
+  font-weight: 600;
+}
+.chip {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+.chip.night {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+.pill {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--line);
+  color: var(--muted);
+}
+.pill::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.pill.ok {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.pill.warn {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+.pill.bad {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+/* ---------------- Layout ---------------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-areas:
+    'scene side'
+    'log side';
+  gap: 18px;
+  padding: 18px 24px 28px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.scene-card {
+  grid-area: scene;
+  padding: 0;
+  overflow: hidden;
+}
+.side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.log-card {
+  grid-area: log;
+}
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'scene' 'side' 'log';
+    padding: 16px;
+  }
+  .topbar {
+    padding: 12px 16px;
+  }
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+/* ---------------- Stats ---------------- */
+.big-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.big-stat .label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.big-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.big-value small {
+  font-size: 1rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+.meter {
+  position: relative;
+  height: 10px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  width: 0;
+  background: var(--blue);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+.meter-mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+}
+.meter-mark.low {
+  background: var(--amber);
+}
+.meter-mark.high {
+  background: var(--green);
+}
+.meter-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.kv {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  margin: 16px 0 0;
+  font-size: 0.9rem;
+}
+.kv dt {
+  color: var(--muted);
+}
+.kv dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--line);
+  color: var(--muted);
+}
+.tag.ok {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.watering {
+  color: var(--blue);
+}
+.alert-text {
+  color: var(--red);
+}
+
+/* ---------------- Controls ---------------- */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+.slider-label output {
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+input[type='range'] {
+  width: 100%;
+  accent-color: var(--green);
+}
+.hint {
+  margin: -6px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+.btn {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.btn-warn {
+  background: var(--red-soft);
+  color: var(--red);
+  border-color: color-mix(in srgb, var(--red) 25%, transparent);
+}
+.btn-warn:hover {
+  background: color-mix(in srgb, var(--red-soft) 70%, var(--red) 12%);
+}
+.btn:focus-visible,
+.segmented button:focus-visible,
+.switch input:focus-visible + .track {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.switch small {
+  color: var(--muted);
+}
+.switch input {
+  position: absolute;
+  opacity: 0;
+}
+.track {
+  flex: none;
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--line);
+  position: relative;
+  transition: background 0.2s;
+}
+.track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+.switch input:checked + .track {
+  background: var(--red);
+}
+.switch input:checked + .track::after {
+  transform: translateX(18px);
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.segmented button {
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.segmented button[aria-pressed='true'] {
+  background: var(--green-soft);
+  color: var(--green);
+  font-weight: 650;
+}
+.error {
+  margin: 0;
+  min-height: 1em;
+  color: var(--red);
+  font-size: 0.82rem;
+}
+
+/* ---------------- Event log ---------------- */
+.log-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.check {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 340px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+}
+.log-item {
+  display: grid;
+  grid-template-columns: 70px 84px minmax(0, 1fr);
+  gap: 4px 10px;
+  padding: 7px 4px;
+  border-top: 1px solid var(--line);
+  align-items: baseline;
+}
+.log-item:first-child {
+  border-top: 0;
+}
+.log-time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.log-kind {
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.log-item.warn .log-kind,
+.kind-motion .log-kind {
+  color: var(--amber);
+}
+.log-item.error .log-kind {
+  color: var(--red);
+}
+.kind-pump .log-kind {
+  color: var(--blue);
+}
+.kind-config .log-kind {
+  color: var(--green);
+}
+.log-body {
+  min-width: 0;
+}
+.log-msg {
+  margin-right: 8px;
+}
+.checks {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  vertical-align: middle;
+}
+.check-chip {
+  font-size: 0.72rem;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green);
+  white-space: nowrap;
+}
+.check-chip.bad {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.log-detail {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+.hide-readings .kind-reading.ok {
+  display: none;
+}
+@media (max-width: 600px) {
+  .log-item {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+  .log-kind {
+    display: none;
+  }
+}
+
+/* ================= SVG scene ================= */
+#scene {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: inherit;
+}
+#scene .label {
+  font-size: 13px;
+  fill: #55655d;
+  text-anchor: middle;
+}
+#scene .label.left {
+  text-anchor: start;
+}
+#sky-night,
+#moon {
+  opacity: 0;
+  transition: opacity 1.2s;
+}
+#sun {
+  fill: #f6c445;
+  transition: opacity 1.2s;
+}
+#moon circle {
+  fill: #f1f3d9;
+}
+#moon .moon-cut {
+  fill: #22324e;
+}
+#scene.night #sky-night,
+#scene.night #moon {
+  opacity: 1;
+}
+#scene.night #sun {
+  opacity: 0;
+}
+.ground {
+  fill: #c7b08a;
+}
+.grass {
+  fill: #8dbb68;
+}
+
+.wire {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.wire.signal {
+  stroke: #e0a23b;
+}
+.wire.power {
+  stroke: #c0392b;
+  stroke-width: 3;
+}
+.wire.sensor {
+  stroke: #607d8b;
+  stroke-dasharray: 1 0;
+}
+
+.tank-body {
+  fill: #eaf0f3;
+  stroke: #8fa3ae;
+  stroke-width: 2;
+}
+.tank-water {
+  fill: #86c8ea;
+}
+.pump-body {
+  fill: #5d7280;
+}
+.rotor {
+  transform-origin: 175px 380px;
+  transform-box: view-box;
+}
+.rotor-ring {
+  fill: #3d4f5a;
+}
+.rotor-blades {
+  stroke: #cfd8dc;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+#scene.pump-on .rotor {
+  animation: spin 0.8s linear infinite;
+}
+
+.pipe {
+  fill: none;
+  stroke: #a3b1ba;
+  stroke-width: 9;
+  stroke-linejoin: round;
+}
+.flow {
+  fill: none;
+  stroke: #3b9ad6;
+  stroke-width: 4;
+  stroke-linejoin: round;
+  stroke-dasharray: 10 12;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#scene.pump-on .flow {
+  opacity: 1;
+  animation: flow 0.7s linear infinite;
+}
+.sprinkler {
+  fill: #5d7280;
+}
+.spray {
+  fill: #3b9ad6;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+#scene.pump-on .spray {
+  opacity: 0.13;
+}
+.drops circle {
+  fill: #3b9ad6;
+  opacity: 0;
+}
+#scene.pump-on .drops circle {
+  animation: drop 1.1s ease-in infinite;
+}
+#scene.pump-on .drops circle:nth-child(2) {
+  animation-delay: 0.3s;
+}
+#scene.pump-on .drops circle:nth-child(3) {
+  animation-delay: 0.6s;
+}
+#scene.pump-on .drops circle:nth-child(4) {
+  animation-delay: 0.15s;
+}
+#scene.pump-on .drops circle:nth-child(5) {
+  animation-delay: 0.45s;
+}
+#scene.pump-on .drops circle:nth-child(6) {
+  animation-delay: 0.8s;
+}
+#scene.pump-on .drops circle:nth-child(7) {
+  animation-delay: 0.95s;
+}
+
+.relay-body {
+  fill: #263238;
+}
+.relay-title {
+  font-size: 10px;
+  font-weight: 700;
+  fill: #cfd8dc;
+  text-anchor: middle;
+  letter-spacing: 0.08em;
+}
+.terminal {
+  fill: #b0bec5;
+}
+.lever {
+  stroke: #eceff1;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transform-origin: 186px 290px;
+  transform-box: view-box;
+  transform: rotate(-30deg);
+  transition: transform 0.25s ease;
+}
+#scene.pump-on .lever {
+  transform: rotate(0deg);
+}
+.relay-led {
+  fill: #4a5a63;
+}
+#scene.pump-on .relay-led {
+  fill: #ff5a4f;
+}
+#relay-state {
+  font-weight: 700;
+}
+#scene.pump-on #relay-state {
+  fill: #2f8fc9;
+}
+
+.mcu-body {
+  fill: #2a5d7c;
+}
+.mcu-chip {
+  fill: #1a3a4f;
+  stroke: #9fb7c6;
+  stroke-width: 1;
+}
+.mcu-label {
+  font-size: 11px;
+  font-weight: 700;
+  fill: #e3eef5;
+  text-anchor: middle;
+}
+.wifi path {
+  fill: none;
+  stroke: #7fe0a4;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.wifi circle {
+  fill: #7fe0a4;
+}
+.wifi-slash {
+  stroke: #ff6b61;
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0;
+}
+#scene.link-warn .wifi path,
+#scene.link-warn .wifi circle {
+  stroke: #f2b45a;
+  fill: none;
+}
+#scene.link-warn .wifi circle {
+  fill: #f2b45a;
+}
+#scene.offline .wifi path {
+  stroke: #8aa0ad;
+}
+#scene.offline .wifi circle {
+  fill: #8aa0ad;
+}
+#scene.offline .wifi-slash {
+  opacity: 1;
+}
+#mcu-status {
+  font-weight: 600;
+}
+
+.pot {
+  fill: #d98a62;
+}
+.pot-rim {
+  fill: #c4744d;
+}
+.soil {
+  fill: #7a5640;
+}
+.soil-water {
+  fill: #3b9ad6;
+  opacity: 0.45;
+  transition:
+    y 0.6s ease,
+    height 0.6s ease;
+}
+.thr {
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+  transition:
+    y1 0.4s,
+    y2 0.4s;
+}
+.thr-high {
+  stroke: #9be3b3;
+}
+.thr-low {
+  stroke: #ffb27a;
+}
+.thr-label {
+  font-size: 12.5px;
+  font-weight: 650;
+}
+.thr-label.high {
+  fill: #2e7d4f;
+}
+.thr-label.low {
+  fill: #c96f2e;
+}
+
+.plant path {
+  fill: none;
+  stroke: #9ccc65;
+  stroke-width: 9;
+  stroke-linecap: round;
+  transition: stroke 1s;
+}
+.plant .leaves ellipse {
+  fill: #4f9a3a;
+  transition: fill 1s;
+}
+.plant {
+  transform-origin: 450px 282px;
+  transform-box: view-box;
+  transition: transform 1s;
+}
+.plant.dry path {
+  stroke: #c8c46e;
+}
+.plant.dry .leaves ellipse {
+  fill: #a7a046;
+}
+.plant.dry {
+  transform: scaleY(0.94);
+}
+
+.prong {
+  fill: #b0bec5;
+}
+.probe-head {
+  fill: #2b3a44;
+}
+.bubble {
+  fill: #ffffff;
+  stroke: #cfd8dc;
+  stroke-width: 1.5;
+}
+.bubble-pointer {
+  stroke: #90a4ae;
+  stroke-width: 1.5;
+}
+.bubble-text {
+  font-size: 19px;
+  font-weight: 700;
+  fill: #1e2b25;
+  text-anchor: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+.pole {
+  fill: #90a4ae;
+}
+.pir-body {
+  fill: #eceff1;
+  stroke: #b0bec5;
+  stroke-width: 1.5;
+}
+.pir-dome {
+  fill: #ffffff;
+  stroke: #b0bec5;
+  stroke-width: 1.5;
+}
+.pir-facets {
+  stroke: #cfd8dc;
+  stroke-width: 1.2;
+  fill: none;
+}
+.pulse {
+  fill: none;
+  stroke: #ff5a4f;
+  stroke-width: 2;
+  opacity: 0;
+  transform-origin: 770px 214px;
+  transform-box: view-box;
+}
+#scene.motion .pulse {
+  animation: pulse 1.6s ease-out infinite;
+}
+#scene.motion .pulse.p2 {
+  animation-delay: 0.8s;
+}
+.led-bezel {
+  fill: #37474f;
+}
+.led {
+  fill: #4b2a2a;
+  transition: fill 0.2s;
+}
+.led-glow {
+  fill: #ff3b30;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+#scene.motion .led {
+  fill: #ff3b30;
+}
+#scene.motion .led-glow {
+  opacity: 0.8;
+}
+.motion-text {
+  font-size: 14px;
+  font-weight: 800;
+  fill: #c4302b;
+  text-anchor: middle;
+  letter-spacing: 0.06em;
+  opacity: 0;
+}
+#scene.motion .motion-text {
+  opacity: 1;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes flow {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+@keyframes drop {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(150px);
+  }
+}
+@keyframes pulse {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.7);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #scene * {
+    animation: none !important;
+  }
+}
+
+/* ---- Refinements ---- */
+.bubble-caption {
+  font-size: 11px;
+  fill: #66766e;
+  text-anchor: middle;
+}
+#stat-thresholds {
+  white-space: nowrap;
+}
+.kv dd .tag {
+  display: inline-block;
+  margin-top: 3px;
+}
+.soil-water {
+  fill: #3d9ee0;
+  opacity: 0.55;
+}
+
+/* Night: labels on the sky need light text; labels on the ground stay dark. */
+#scene.night .label:not(.on-ground) {
+  fill: #c9d6de;
+}
+#scene.night .thr-label.high {
+  fill: #8fe0ab;
+}
+#scene.night .thr-label.low {
+  fill: #ffb27a;
+}
+#scene.night.pump-on #relay-state {
+  fill: #7cc4ef;
+}

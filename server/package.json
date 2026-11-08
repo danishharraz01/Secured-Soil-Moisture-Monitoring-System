@@ -1,0 +1,35 @@
+{
+  "name": "@soil/server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend API: device channel, users, OTP, sessions, alerts, hash chain, backups.",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "db:generate": "prisma generate --no-hints",
+    "pretypecheck": "prisma generate --no-hints",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "@soil/shared": "1.0.0",
+    "express": "^5.3.0",
+    "nodemailer": "^10.4.0",
+    "pino": "^10.4.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@peculiar/x509": "^3.1.0",
+    "@types/express": "^5.0.6",
+    "@types/nodemailer": "^8.0.2",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "embedded-postgres": "^16.15.0-beta.19",
+    "pg": "^8.23.1",
+    "pino-pretty": "^13.2.0",
+    "prisma": "^7.10.1",
+    "reflect-metadata": "^0.2.2",
+    "supertest": "^7.3.2"
+  }
+}

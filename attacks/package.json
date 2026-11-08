@@ -1,0 +1,14 @@
+{
+  "name": "@soil/attacks",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Red-team script that attacks the running system and reports BLOCKED / NOT BLOCKED.",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@soil/shared": "1.0.0"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "secured-soil-moisture-monitoring-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Secured Soil Moisture Monitoring System for celery - rebuilt portfolio version of a diploma final year project.",
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "device",
+    "server",
+    "syslog",
+    "attacks"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "setup": "tsx server/scripts/setup.ts",
+    "reset": "tsx server/scripts/reset.ts",
+    "db": "tsx server/scripts/db.ts",
+    "server": "npm start -w @soil/server",
+    "device": "npm start -w @soil/device",
+    "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "author": "Danish Harraz",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.1.0"
+  },
+  "allowScripts": {
+    "prisma@7.10.1": true,
+    "@prisma/engines@7.10.1": true,
+    "@embedded-postgres/windows-x64@16.15.0-beta.19": true,
+    "esbuild@0.28.2": true
+  }
+}

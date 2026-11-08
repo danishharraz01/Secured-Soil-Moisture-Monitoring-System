@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Virtual Garden</title>
+    <meta name="description" content="Live view of the simulated celery sensor node" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="style.css" />
+    <script src="garden.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M16 29V14" />
+          <path d="M16 18c-6 0-9-4-9-10 6 0 9 4 9 10z" />
+          <path d="M16 15c0-6 3-10 9-10 0 6-3 10-9 10z" />
+        </svg>
+        <div>
+          <h1>Virtual Garden</h1>
+          <p id="device-id">Simulated NodeMCU sensor node</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="clock" title="Device clock (simulated time in demo mode)">
+          <span class="label">Device time</span>
+          <span id="sim-time">--:--</span>
+          <span id="day-night" class="chip">Day</span>
+        </div>
+        <span id="link-pill" class="pill">Connecting…</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <!-- =============== The garden scene =============== -->
+      <section class="card scene-card" aria-label="Garden scene">
+        <svg id="scene" viewBox="0 0 900 470" role="img" aria-labelledby="scene-title">
+          <title id="scene-title">
+            Celery pot with soil moisture sensor, relay, water pump, sprinkler, PIR sensor and LED
+          </title>
+          <defs>
+            <linearGradient id="g-day" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#d9eef6" />
+              <stop offset="1" stop-color="#f3faf4" />
+            </linearGradient>
+            <linearGradient id="g-night" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#1b2a43" />
+              <stop offset="1" stop-color="#34486a" />
+            </linearGradient>
+            <clipPath id="soil-clip">
+              <polygon points="360,282 540,282 522,402 378,402" />
+            </clipPath>
+            <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="5" />
+            </filter>
+          </defs>
+
+          <!-- Sky + sun/moon -->
+          <rect width="900" height="470" fill="url(#g-day)" />
+          <rect id="sky-night" width="900" height="470" fill="url(#g-night)" />
+          <circle id="sun" cx="830" cy="62" r="26" />
+          <g id="moon">
+            <circle cx="830" cy="62" r="22" />
+            <circle cx="841" cy="54" r="19" class="moon-cut" />
+          </g>
+
+          <!-- Ground -->
+          <rect y="410" width="900" height="60" class="ground" />
+          <rect y="404" width="900" height="8" class="grass" />
+
+          <!-- Wires (drawn first so devices sit on top) -->
+          <path class="wire signal" d="M110 216 V240 H202 V255" />
+          <path class="wire power" d="M202 305 V350" />
+          <path class="wire sensor" d="M394 266 C392 196 260 120 160 176" />
+          <path class="wire sensor" d="M770 404 V424 H18 V196 H40" />
+
+          <!-- Water tank -->
+          <g class="tank">
+            <rect x="30" y="280" width="90" height="130" rx="8" class="tank-body" />
+            <rect x="36" y="312" width="78" height="92" rx="4" class="tank-water" />
+            <text x="75" y="448" class="label on-ground">Water tank</text>
+          </g>
+
+          <!-- Pump -->
+          <path class="pipe" d="M120 395 H140" />
+          <g class="pump">
+            <rect x="140" y="350" width="70" height="60" rx="10" class="pump-body" />
+            <g class="rotor">
+              <circle cx="175" cy="380" r="17" class="rotor-ring" />
+              <path
+                d="M175 380 L175 366 M175 380 L187 387 M175 380 L163 387"
+                class="rotor-blades"
+              />
+            </g>
+            <text x="175" y="448" class="label on-ground">Water pump</text>
+          </g>
+
+          <!-- Pipe to the sprinkler + animated water flow -->
+          <path class="pipe" d="M210 372 H250 V70 H450 V92" />
+          <path class="flow" d="M210 372 H250 V70 H450 V92" />
+
+          <!-- Sprinkler + spray -->
+          <polygon class="spray" points="450,104 392,258 508,258" />
+          <g class="drops">
+            <circle cx="418" cy="112" r="3" />
+            <circle cx="436" cy="112" r="3" />
+            <circle cx="450" cy="112" r="3" />
+            <circle cx="464" cy="112" r="3" />
+            <circle cx="482" cy="112" r="3" />
+            <circle cx="428" cy="112" r="2.5" />
+            <circle cx="472" cy="112" r="2.5" />
+          </g>
+          <rect x="430" y="90" width="40" height="14" rx="5" class="sprinkler" />
+          <text x="508" y="100" class="label left">Sprinkler</text>
+
+          <!-- Relay -->
+          <g class="relay">
+            <rect x="170" y="255" width="64" height="50" rx="6" class="relay-body" />
+            <text x="202" y="270" class="relay-title">RELAY</text>
+            <circle cx="186" cy="290" r="3.5" class="terminal" />
+            <circle cx="218" cy="290" r="3.5" class="terminal" />
+            <line x1="186" y1="290" x2="218" y2="290" class="lever" />
+            <circle cx="225" cy="263" r="3.5" class="relay-led" />
+            <text id="relay-state" x="202" y="322" class="label">OFF</text>
+          </g>
+
+          <!-- NodeMCU -->
+          <g class="mcu">
+            <rect x="40" y="150" width="120" height="66" rx="8" class="mcu-body" />
+            <rect x="58" y="170" width="34" height="28" rx="3" class="mcu-chip" />
+            <text x="125" y="200" class="mcu-label">NodeMCU</text>
+            <g class="wifi">
+              <path d="M128 172 a14 14 0 0 1 20 0" />
+              <path d="M132 176 a8 8 0 0 1 12 0" />
+              <circle cx="138" cy="180" r="2" />
+              <line x1="126" y1="160" x2="150" y2="184" class="wifi-slash" />
+            </g>
+            <text id="mcu-status" x="100" y="140" class="label">online</text>
+          </g>
+
+          <!-- Pot (cross-section) -->
+          <polygon points="348,280 552,280 530,410 370,410" class="pot" />
+          <polygon points="360,282 540,282 522,402 378,402" class="soil" />
+          <g clip-path="url(#soil-clip)">
+            <rect id="water-level" x="350" y="300" width="200" height="102" class="soil-water" />
+          </g>
+          <rect x="336" y="264" width="228" height="18" rx="6" class="pot-rim" />
+
+          <!-- Threshold lines -->
+          <line id="line-high" x1="364" x2="536" y1="300" y2="300" class="thr thr-high" />
+          <line id="line-low" x1="364" x2="536" y1="320" y2="320" class="thr thr-low" />
+          <text id="label-high" x="572" y="304" class="thr-label high">OFF ≥ 32 mm</text>
+          <text id="label-low" x="572" y="324" class="thr-label low">ON ≤ 24.5 mm</text>
+
+          <!-- Celery -->
+          <g id="plant" class="plant">
+            <path d="M446 282 C444 232 430 192 418 152" />
+            <path d="M450 282 C450 226 448 182 446 136" />
+            <path d="M454 282 C456 232 468 192 480 154" />
+            <path d="M442 282 C436 242 414 212 398 182" />
+            <path d="M458 282 C464 242 488 214 504 184" />
+            <!-- Each stalk ends in a fan of three narrow leaflets -->
+            <g class="leaves">
+              <ellipse cx="408.5" cy="148.9" rx="5" ry="11" transform="rotate(-72 408.5 148.9)" />
+              <ellipse cx="413.0" cy="143.3" rx="5" ry="11" transform="rotate(-30 413.0 143.3)" />
+              <ellipse cx="420.1" cy="142.2" rx="5" ry="11" transform="rotate(12 420.1 142.2)" />
+              <ellipse cx="439.3" cy="128.6" rx="5" ry="11" transform="rotate(-42 439.3 128.6)" />
+              <ellipse cx="446.0" cy="126.0" rx="5" ry="11" />
+              <ellipse cx="452.7" cy="128.6" rx="5" ry="11" transform="rotate(42 452.7 128.6)" />
+              <ellipse cx="477.9" cy="144.2" rx="5" ry="11" transform="rotate(-12 477.9 144.2)" />
+              <ellipse cx="485.0" cy="145.3" rx="5" ry="11" transform="rotate(30 485.0 145.3)" />
+              <ellipse cx="489.5" cy="150.9" rx="5" ry="11" transform="rotate(72 489.5 150.9)" />
+              <ellipse cx="388.1" cy="183.2" rx="5" ry="11" transform="rotate(-97 388.1 183.2)" />
+              <ellipse cx="389.8" cy="176.3" rx="5" ry="11" transform="rotate(-55 389.8 176.3)" />
+              <ellipse cx="395.8" cy="172.3" rx="5" ry="11" transform="rotate(-13 395.8 172.3)" />
+              <ellipse cx="506.2" cy="174.3" rx="5" ry="11" transform="rotate(13 506.2 174.3)" />
+              <ellipse cx="512.2" cy="178.3" rx="5" ry="11" transform="rotate(55 512.2 178.3)" />
+              <ellipse cx="513.9" cy="185.2" rx="5" ry="11" transform="rotate(97 513.9 185.2)" />
+            </g>
+          </g>
+
+          <!-- Soil moisture probe + live reading -->
+          <rect x="386" y="280" width="4" height="72" class="prong" />
+          <rect x="398" y="280" width="4" height="72" class="prong" />
+          <rect x="382" y="266" width="24" height="16" rx="3" class="probe-head" />
+          <line x1="352" y1="242" x2="386" y2="266" class="bubble-pointer" />
+          <rect x="272" y="190" width="120" height="52" rx="10" class="bubble" />
+          <text x="332" y="207" class="bubble-caption">Moisture sensor</text>
+          <text id="probe-text" x="332" y="231" class="bubble-text">-- mm</text>
+
+          <!-- PIR motion sensor + red LED -->
+          <rect x="766" y="248" width="8" height="160" class="pole" />
+          <g class="pir">
+            <circle cx="770" cy="214" r="34" class="pulse" />
+            <circle cx="770" cy="214" r="34" class="pulse p2" />
+            <rect x="742" y="214" width="56" height="34" rx="8" class="pir-body" />
+            <path d="M750 214 a20 20 0 0 1 40 0 z" class="pir-dome" />
+            <path d="M760 214 l4 -14 M770 214 v-18 M780 214 l-4 -14" class="pir-facets" />
+          </g>
+          <circle cx="770" cy="282" r="18" class="led-glow" filter="url(#glow)" />
+          <circle cx="770" cy="282" r="12" class="led-bezel" />
+          <circle id="led" cx="770" cy="282" r="8" class="led" />
+          <text x="770" y="448" class="label on-ground">PIR sensor + LED</text>
+          <text id="motion-text" x="770" y="176" class="motion-text">MOTION!</text>
+        </svg>
+      </section>
+
+      <!-- =============== Readings + controls =============== -->
+      <aside class="side">
+        <section class="card stats" aria-label="Live readings">
+          <div class="big-stat">
+            <span class="label">Soil moisture</span>
+            <span class="big-value"><span id="stat-moisture">--</span><small> mm</small></span>
+          </div>
+          <div class="meter" aria-hidden="true">
+            <div id="meter-fill" class="meter-fill"></div>
+            <div id="meter-low" class="meter-mark low"></div>
+            <div id="meter-high" class="meter-mark high"></div>
+          </div>
+          <div class="meter-scale" aria-hidden="true">
+            <span>0</span><span>25</span><span>50 mm</span>
+          </div>
+          <dl class="kv">
+            <dt>Water pump</dt>
+            <dd id="stat-pump">Off</dd>
+            <dt>Thresholds</dt>
+            <dd>
+              <span id="stat-thresholds">ON ≤ 24.5 · OFF ≥ 32 mm</span>
+              <span id="stat-thr-src" class="tag">default</span>
+            </dd>
+            <dt>Water used today</dt>
+            <dd id="stat-water">0 ml</dd>
+            <dt>Motion LED</dt>
+            <dd id="stat-led">Off</dd>
+            <dt>Send queue</dt>
+            <dd id="stat-queue">0</dd>
+            <dt>Messages sent</dt>
+            <dd id="stat-counts">0</dd>
+            <dt>Rejected · failed</dt>
+            <dd id="stat-errors">0 · 0</dd>
+          </dl>
+        </section>
+
+        <section class="card controls" aria-label="Controls">
+          <h2>Controls</h2>
+          <label for="moisture-slider" class="slider-label">
+            <span>Soil moisture override</span>
+            <output id="slider-out" for="moisture-slider">--</output>
+          </label>
+          <input id="moisture-slider" type="range" min="0" max="50" step="0.1" value="28" />
+          <p class="hint">Drag below the ON line to start a watering cycle.</p>
+
+          <button id="btn-motion" class="btn btn-warn" type="button">Trigger motion</button>
+
+          <label class="switch">
+            <input id="toggle-disconnect" type="checkbox" />
+            <span class="track" aria-hidden="true"></span>
+            <span>Simulate disconnect <small>(stops all sending)</small></span>
+          </label>
+
+          <div class="segmented" role="group" aria-label="Simulation speed">
+            <button type="button" data-speed="demo">Demo · 1 s = 10 min</button>
+            <button type="button" data-speed="realtime">Real time</button>
+          </div>
+          <p id="control-error" class="error" role="alert"></p>
+        </section>
+      </aside>
+
+      <!-- =============== Event log =============== -->
+      <section class="card log-card" aria-label="Event log">
+        <div class="log-head">
+          <h2>Event log</h2>
+          <label class="check"
+            ><input id="hide-readings" type="checkbox" /> Hide successful readings</label
+          >
+        </div>
+        <ol id="log" class="log"></ol>
+      </section>
+    </main>
+  </body>
+</html>

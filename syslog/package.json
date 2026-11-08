@@ -1,0 +1,14 @@
+{
+  "name": "@soil/syslog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Syslog collector: RFC 5424 messages over TLS with RFC 6587 octet-counting framing.",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@soil/shared": "1.0.0"
+  }
+}

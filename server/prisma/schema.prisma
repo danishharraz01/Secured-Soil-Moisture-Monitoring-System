@@ -1,0 +1,161 @@
+// =====================================================================
+// Secured Soil Moisture Monitoring System - database schema (PostgreSQL)
+// The connection URL lives in prisma.config.ts (Prisma 7).
+// =====================================================================
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// A sensor node (NodeMCU). Its 256-bit secret is stored ENCRYPTED with the
+/// server master key (AES-256-GCM); the plaintext secret never touches the DB.
+model Device {
+  id         String    @id
+  /// JSON envelope {v, alg, iv, ct, tag} - see shared/src/crypto.ts
+  secretEnc  String
+  /// Pump ON at or below this moisture (mm)
+  low        Float
+  /// Pump OFF at or above this moisture (mm)
+  high       Float
+  lastSeenAt DateTime?
+  online     Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+
+  readings Reading[]
+  nonces   Nonce[]
+}
+
+/// One soil moisture reading. Rows form a tamper-evident HMAC hash chain:
+/// hash = HMAC(chainKey, prevHash + canonical fields).
+model Reading {
+  id         Int      @id @default(autoincrement())
+  deviceId   String
+  /// Time of the reading on the device (simulated time in demo mode)
+  ts         DateTime
+  moistureMm Float
+  pumpOn     Boolean
+  /// Water pumped since the previous reading (ml)
+  waterMl    Int
+  /// Server receive time (real time)
+  receivedAt DateTime @default(now())
+  /// Jump of more than 6 mm versus the previous reading
+  anomaly    Boolean  @default(false)
+  prevHash   String
+  hash       String   @unique
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Restrict)
+
+  @@index([deviceId, id])
+  @@index([ts])
+}
+
+/// Request nonces seen recently (replay protection, 10 min TTL).
+model Nonce {
+  deviceId String
+  nonce    String
+  seenAt   DateTime @default(now())
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@id([deviceId, nonce])
+  @@index([seenAt])
+}
+
+enum Role {
+  admin
+  viewer
+}
+
+/// App users. Passwords are hashed with scrypt and a per-user random salt.
+model User {
+  username  String   @id
+  salt      String
+  passHash  String
+  role      Role
+  email     String
+  phone     String?
+  createdAt DateTime @default(now())
+}
+
+/// A pending email OTP. Only an HMAC of the code is stored; single use.
+model OtpChallenge {
+  id        String   @id
+  username  String
+  /// HMAC(masterKey, id|code)
+  codeHash  String
+  /// Client IP + user agent that started the login
+  client    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  @@index([expiresAt])
+}
+
+/// A login session. Only SHA-256 of the bearer token is stored.
+model Session {
+  tokenHash String   @id
+  username  String
+  createdAt DateTime @default(now())
+  /// Hard limit: createdAt + 10 minutes (no sliding renewal)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+  @@index([username])
+}
+
+enum AlertType {
+  pump_on
+  pump_off
+  motion
+  offline
+  online
+  tamper
+}
+
+enum AlertLevel {
+  info
+  warning
+  critical
+}
+
+/// Notifications shown in the app (and sent by SMS/email where required).
+model Alert {
+  id      Int        @id @default(autoincrement())
+  at      DateTime   @default(now())
+  /// Simulated device time, when the alert came from a reading
+  simTime DateTime?
+  type    AlertType
+  level   AlertLevel
+  message String
+
+  @@index([at])
+  @@index([type, id])
+}
+
+/// Security audit trail: logins, rejections, admin actions.
+model Audit {
+  id     Int      @id @default(autoincrement())
+  at     DateTime @default(now())
+  /// username, device ID or "anonymous"
+  actor  String
+  action String
+  detail String
+  ip     String?
+
+  @@index([at])
+  @@index([action])
+}
+
+/// Small key/value store, e.g. the Ed25519-signed hash chain head pointer.
+model Meta {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

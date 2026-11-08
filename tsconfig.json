@@ -1,0 +1,6 @@
+{
+  // Root project: only type-checks root-level config files.
+  // Each workspace has its own tsconfig.json.
+  "extends": "./tsconfig.base.json",
+  "include": ["vitest.config.ts"]
+}
