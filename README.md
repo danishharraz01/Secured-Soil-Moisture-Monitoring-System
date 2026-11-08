@@ -341,6 +341,10 @@ App screenshots are rendered from the real app widgets with sample data
 
 ## Tests and results
 
+<p align="center">
+  <img src="docs/screenshots/attack-results.png" alt="Attack script: 21 attacks, 21 blocked, 0 got through" width="840">
+</p>
+
 | What                                                    | Result                                    | Output                                                           |
 | ------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------- |
 | Node unit + integration tests (vitest, real PostgreSQL) | **190 passed**                            | [docs/results/tests.txt](docs/results/tests.txt)                 |
