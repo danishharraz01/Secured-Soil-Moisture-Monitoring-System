@@ -1,8 +1,0 @@
-To: admin@example.com
-Subject: Your Celery Soil Monitor login code
-Date: 2026-11-08T05:20:42.364Z
-
-Your login code is 449153
-
-It expires in 5 minutes and works once.
-If you didn't try to log in, change your password.

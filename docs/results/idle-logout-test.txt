@@ -1,6 +1,0 @@
-Idle logout test (server started with SESSION_IDLE_MS=5000 to shorten 10 minutes to 5 seconds)
-1. Logged in with password + email OTP. Token: 8d98c20783ea...
-2. Immediately, background poll:       {"username":"admin","role":"admin"}
-3. After 3 s, background poll only:   {"username":"admin","role":"admin"}
-4. After 6 s with no user activity:   {"error":"Logged out after 5 seconds of inactivity."}
-5. Same token again:                   {"error":"Please log in"}
