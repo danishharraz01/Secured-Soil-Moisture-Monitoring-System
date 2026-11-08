@@ -16,13 +16,13 @@ sensor to the cloud backup.
 
 ## Why this project exists
 
-This was my **Diploma final year project (2021-2022)**. It was done online during
+This was my **final year project (2021-2022)**. It was done online during
 the PKP/MCO lockdown in Malaysia, so I could not build the hardware - the
 NodeMCU, sensors and pump were only simulated, and the end result was not what I
 had designed in my proposal.
 
-This repository is the **portfolio rebuild**: the same system, following my
-original block diagram and flowcharts, but finished properly - a working
+This repository is the same system, following my original block diagram and
+flowcharts, but finished properly - a working
 end-to-end system, security upgraded to current standards, automated tests,
 an attack script that tries to break it, and CI. The hardware is still
 simulated, but now by a faithful virtual device with a live "Virtual Garden"
@@ -402,4 +402,4 @@ docs/      screenshots/ and results/ (real outputs)
 
 ---
 
-**Author:** Danish Harraz - Diploma final year project (2021-2022), rebuilt for my portfolio.
+**Author:** Danish Harraz - Final year project (2021).
