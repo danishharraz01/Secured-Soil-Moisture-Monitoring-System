@@ -1,0 +1,11 @@
+Restoring cloud/backup-2026-11-08T05-20-57-171Z.json
+
+OK    Signature valid: backup was made by our server and not modified
+OK    AES-256 key unwrapped with RSA-OAEP-3072 private key
+OK    Decrypted with AES-256-GCM (tag verified)
+OK    SHA-256 of restored data matches
+OK    Hash chain links intact across 404 readings
+
+Restored 404 readings (backup made 2026-11-08T05:20:57.171Z).
+Newest: 11/11/2026, 8:39:56 AM  moisture 78.52%  pump off
+Written to restored/backup-2026-11-08T05-20-57-171Z.json

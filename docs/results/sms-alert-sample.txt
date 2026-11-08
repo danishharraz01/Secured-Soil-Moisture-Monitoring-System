@@ -1,0 +1,5 @@
+To: +60123456789
+Subject: SMS
+Date: 2026-11-08T05:20:44.643Z
+
+[Celery Monitor] Motion detected near your celery plant at 06:49 pm. Check the app.

@@ -1,0 +1,13 @@
+node_modules/
+data/
+certs/
+outbox/
+logs/
+cloud/
+restored/
+offline-keys/
+server/secrets.json
+server/backup-public.pem
+server/server-public.pem
+device/device.json
+CREDENTIALS.txt
